@@ -1,7 +1,7 @@
 Spreading Activation
 ========================
 
-Based on http://dx.doi.org/10.14279/depositonce-8408
+Based on http://dx.doi.org/10.14279/depositonce-8408  
 Implementation for apache/tinkerpop
 
 Current Features
