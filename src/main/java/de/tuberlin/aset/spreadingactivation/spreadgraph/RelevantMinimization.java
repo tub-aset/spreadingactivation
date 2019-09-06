@@ -7,7 +7,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public class RelevantMinimization extends Minimization {
+public class RelevantMinimization extends Transformation {
 
 	private final Object originalId;
 
@@ -77,7 +77,7 @@ public class RelevantMinimization extends Minimization {
 		return new Builder(originalSpreadGraph, originalId);
 	}
 
-	public static class Builder extends Minimization.Builder<Builder> {
+	public static class Builder extends Transformation.Builder<Builder> {
 
 		private final Object originalId;
 

@@ -11,7 +11,7 @@ import de.tuberlin.aset.spreadingactivation.spreadgraph.SpreadGraph.DefaultPrope
 import de.tuberlin.aset.spreadingactivation.spreadgraph.SpreadGraph.PropertyKeyFactory;
 import de.tuberlin.aset.spreadingactivation.util.RunnableProcess;
 
-public abstract class Minimization extends RunnableProcess {
+public abstract class Transformation extends RunnableProcess {
 
 	protected final SpreadGraph originalSpreadGraph;
 
@@ -22,7 +22,7 @@ public abstract class Minimization extends RunnableProcess {
 
 	protected final SpreadGraph spreadGraph;
 
-	protected Minimization(Builder<?> builder) {
+	protected Transformation(Builder<?> builder) {
 		this.traversal = builder.traversal != null ? builder.traversal : TinkerGraph.open().traversal();
 		this.propertyKeyFactory = builder.propertyKeyFactory != null ? builder.propertyKeyFactory
 				: DefaultPropertyKeyFactory.INSTANCE;
