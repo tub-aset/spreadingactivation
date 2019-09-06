@@ -11,7 +11,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import de.tuberlin.aset.spreadingactivation.Execution.Context;
 
-public class SpreadingMode implements SendMode {
+public final class SpreadingMode implements SendMode {
 
 	private final Collection<SendMode> sendModes;
 
