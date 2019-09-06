@@ -50,12 +50,6 @@ public abstract class Minimization extends RunnableProcess {
 	}
 
 	protected Vertex addVertex(Vertex originalVertex, int pulse) {
-		Vertex existingVertex = getVertex(originalVertex, pulse);
-
-		if (existingVertex != null) {
-			return existingVertex;
-		}
-
 		Object id = originalSpreadGraph.originalId(originalVertex);
 
 		Vertex vertex = traversal.addV(originalVertex.label()).next();

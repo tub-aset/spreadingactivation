@@ -52,55 +52,56 @@ public class Generation extends RunnableProcess {
 	@Override
 	public void run() {
 		started();
-
-		Iterator<Vertex> startVertexes = executionResult.activatedVertexes(startPulse);
-		while (startVertexes.hasNext()) {
-			Vertex startVertex = startVertexes.next();
-			addVertex(startVertex, startPulse);
-		}
-
-		for (int pulse = startPulse + 1; pulse <= endPulse; pulse++) {
-			if (this.isInterrupted()) {
-				break;
+		try {
+			Iterator<Vertex> startVertexes = executionResult.activatedVertexes(startPulse);
+			while (startVertexes.hasNext()) {
+				Vertex startVertex = startVertexes.next();
+				addVertex(startVertex, startPulse);
 			}
-			GraphTraversal<?, Vertex> receivedActivationVertexes = originalTraversal.V()
-					.has(originalPropertyKeyFactory.inputActivationKey(pulse), P.gt(0d));
-			while (receivedActivationVertexes.hasNext()) {
-				Vertex activatedVertex = receivedActivationVertexes.next();
-				Vertex toVertex = addVertex(activatedVertex, pulse);
 
-				Iterator<Edge> edges = originalTraversal.V(activatedVertex.id()).toE(Direction.OUT)
-						.has(originalPropertyKeyFactory.edgeActivationKey(pulse, false), P.gt(0d));
-				while (edges.hasNext()) {
-					Edge edge = edges.next();
-
-					Vertex fromVertex = findVertex(edge.inVertex(), pulse - 1);
-
-					addEdge(edge, fromVertex, toVertex);
+			for (int pulse = startPulse + 1; pulse <= endPulse; pulse++) {
+				if (this.isInterrupted()) {
+					break;
 				}
+				GraphTraversal<?, Vertex> receivedActivationVertexes = originalTraversal.V()
+						.has(originalPropertyKeyFactory.inputActivationKey(pulse), P.gt(0d));
+				while (receivedActivationVertexes.hasNext()) {
+					Vertex activatedVertex = receivedActivationVertexes.next();
+					Vertex toVertex = addVertex(activatedVertex, pulse);
 
-				edges = originalTraversal.V(activatedVertex.id()).toE(Direction.IN)
-						.has(originalPropertyKeyFactory.edgeActivationKey(pulse, true), P.gt(0d));
-				while (edges.hasNext()) {
-					Edge edge = edges.next();
+					Iterator<Edge> edges = originalTraversal.V(activatedVertex.id()).toE(Direction.OUT)
+							.has(originalPropertyKeyFactory.edgeActivationKey(pulse, false), P.gt(0d));
+					while (edges.hasNext()) {
+						Edge edge = edges.next();
 
-					Vertex fromVertex = findVertex(edge.outVertex(), pulse - 1);
+						Vertex fromVertex = findVertex(edge.inVertex(), pulse - 1);
 
-					addEdge(edge, fromVertex, toVertex);
+						addEdge(edge, fromVertex, toVertex);
+					}
+
+					edges = originalTraversal.V(activatedVertex.id()).toE(Direction.IN)
+							.has(originalPropertyKeyFactory.edgeActivationKey(pulse, true), P.gt(0d));
+					while (edges.hasNext()) {
+						Edge edge = edges.next();
+
+						Vertex fromVertex = findVertex(edge.outVertex(), pulse - 1);
+
+						addEdge(edge, fromVertex, toVertex);
+					}
 				}
 			}
+		} finally {
+			finished();
 		}
-
-		finished();
 	}
 
-	private final Edge addEdge(Edge originalEdge, Vertex fromVertex, Vertex toVertex) {
+	private Edge addEdge(Edge originalEdge, Vertex fromVertex, Vertex toVertex) {
 		Edge edge = fromVertex.addEdge(originalEdge.label(), toVertex);
 		edge.property(propertyKeyFactory.originalIdKey(), originalEdge.id());
 		return edge;
 	}
 
-	private final Vertex addVertex(Vertex originalVertex, int pulse) {
+	private Vertex addVertex(Vertex originalVertex, int pulse) {
 		Object id = originalVertex.id();
 		Optional<Vertex> optional = traversal.V().has(propertyKeyFactory.originalIdKey(), id)
 				.has(propertyKeyFactory.pulseKey(), pulse).tryNext();
@@ -114,7 +115,7 @@ public class Generation extends RunnableProcess {
 		return vertex;
 	}
 
-	private final Vertex findVertex(Vertex originalVertex, int sincePulse) {
+	private Vertex findVertex(Vertex originalVertex, int sincePulse) {
 		Object id = originalVertex.id();
 		return traversal.V().has(propertyKeyFactory.originalIdKey(), id)
 				.has(propertyKeyFactory.pulseKey(), P.lte(sincePulse)).order()

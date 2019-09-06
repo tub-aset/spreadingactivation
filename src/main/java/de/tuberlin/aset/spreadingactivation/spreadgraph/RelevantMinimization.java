@@ -11,7 +11,7 @@ public class RelevantMinimization extends Minimization {
 
 	private final Object originalId;
 
-	RelevantMinimization(Builder builder) {
+	private RelevantMinimization(Builder builder) {
 		super(builder);
 
 		this.originalId = builder.originalId;
@@ -20,30 +20,35 @@ public class RelevantMinimization extends Minimization {
 	@Override
 	public void run() {
 		started();
+		try {
+			GraphTraversal<Vertex, Vertex> originalRevelantVertexes = originalSpreadGraph.vertexes(originalId);
 
-		GraphTraversal<Vertex, Vertex> originalRevelantVertexes = originalSpreadGraph.vertexes(originalId);
+			while (originalRevelantVertexes.hasNext()) {
+				if (this.isInterrupted()) {
+					break;
+				}
 
-		while (originalRevelantVertexes.hasNext()) {
-			if (this.isInterrupted()) {
-				break;
+				Vertex originalRevelantVertex = originalRevelantVertexes.next();
+
+				int pulse = originalSpreadGraph.pulse(originalRevelantVertex);
+
+				if (pulse <= endPulse) {
+					Vertex relevantVertex = getVertex(originalRevelantVertex, pulse);
+
+					if (relevantVertex == null) {
+						relevantVertex = addVertex(originalRevelantVertex, pulse);
+					}
+
+					addPathBackwards(originalRevelantVertex, relevantVertex);
+				}
+
 			}
-
-			Vertex originalRevelantVertex = originalRevelantVertexes.next();
-
-			int pulse = originalSpreadGraph.pulse(originalRevelantVertex);
-
-			if (pulse <= endPulse) {
-				Vertex relevantVertex = addVertex(originalRevelantVertex, pulse);
-
-				addPathBackwards(originalRevelantVertex, relevantVertex);
-			}
-
+		} finally {
+			finished();
 		}
-
-		finished();
 	}
 
-	private final void addPathBackwards(Vertex originalTargetVertex, Vertex targetVertex) {
+	private void addPathBackwards(Vertex originalTargetVertex, Vertex targetVertex) {
 		if (this.isInterrupted()) {
 			return;
 		}

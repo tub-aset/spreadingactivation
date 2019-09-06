@@ -101,12 +101,11 @@ public class Execution extends RunnableProcess {
 			if (shutdownExecutor) {
 				executor.shutdown();
 			}
+			finished();
 		}
-
-		finished();
 	}
 
-	private final boolean calculateOutputActivationAndEdgeActivation(ExecutorQueue queue, int pulse) {
+	private boolean calculateOutputActivationAndEdgeActivation(ExecutorQueue queue, int pulse) {
 		GraphTraversal<Vertex, Vertex> vertexWithPreviousActivation = traversal.V().has(
 				propertyKeyFactory.vertexActivationKey(pulse - 1),
 				P.gte(spreadingActivation.minimumOutputActivation()));
@@ -180,7 +179,7 @@ public class Execution extends RunnableProcess {
 		});
 	}
 
-	private final boolean calculateInputActivationAndVertexActivation(ExecutorQueue queue, int pulse) {
+	private boolean calculateInputActivationAndVertexActivation(ExecutorQueue queue, int pulse) {
 		Iterator<Vertex> vertexWithPreviousActivationOrEdgeActivation = traversal.V().or( //
 				__.has(propertyKeyFactory.vertexActivationKey(pulse - 1)), //
 				__.toE(Direction.BOTH).or( //
@@ -230,11 +229,11 @@ public class Execution extends RunnableProcess {
 		return true;
 	}
 
-	private final boolean validActivation(double value) {
+	private boolean validActivation(double value) {
 		return !Double.isInfinite(value) && !Double.isNaN(value) && value > 0d;
 	}
 
-	private final void setPropertyValue(Element element, String key, Object value) {
+	private void setPropertyValue(Element element, String key, Object value) {
 		if (element.property(key).isPresent()) {
 			throw new IllegalStateException("property " + key + " already set for element " + element
 					+ " (current value: " + element.property(key).value() + ", new value: " + value + ")");
@@ -393,15 +392,15 @@ public class Execution extends RunnableProcess {
 			return propertyKey(propertyPrefix, VERTEX_ACTIVATION_PROPERTY_KEY, pulse);
 		}
 
-		private final String propertyKey(String prefix, String key, boolean withDirection, int pulse) {
+		private String propertyKey(String prefix, String key, boolean withDirection, int pulse) {
 			return propertyKey(key) + "_" + withDirection + "_" + pulse;
 		}
 
-		private final String propertyKey(String prefix, String key, int pulse) {
+		private String propertyKey(String prefix, String key, int pulse) {
 			return propertyKey(key) + "_" + pulse;
 		}
 
-		private final String propertyKey(String key) {
+		private String propertyKey(String key) {
 			return propertyPrefix + "_" + key;
 		}
 
