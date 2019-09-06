@@ -69,7 +69,7 @@ public class ExecutionResult {
 		traversal.E().properties(edgePropertyKeys).drop().iterate();
 	}
 
-	public Generation.Builder spreadGraph() {
+	public Generation.Builder generateSpreadGraph() {
 		return new Generation.Builder(this, traversal, propertyKeyFactory);
 	}
 
