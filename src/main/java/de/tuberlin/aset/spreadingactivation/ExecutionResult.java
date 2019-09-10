@@ -54,6 +54,11 @@ public class ExecutionResult {
 				.by(propertyKeyFactory.vertexActivationKey(pulse), Order.desc);
 	}
 
+	@SuppressWarnings("unchecked")
+	public <F extends PropertyKeyFactory> F getPropertyKeyFactory() {
+		return (F) propertyKeyFactory;
+	}
+
 	public void cleanup() {
 		int pulses = this.pulse;
 		String[] vertexPropertyKeys = new String[(pulses + 1) * 3];

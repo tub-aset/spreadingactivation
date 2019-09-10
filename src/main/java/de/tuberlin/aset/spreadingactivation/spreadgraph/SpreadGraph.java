@@ -61,6 +61,11 @@ public class SpreadGraph {
 		return edge.property(propertyKeyFactory.originalIdKey()).value();
 	}
 
+	@SuppressWarnings("unchecked")
+	public <F extends PropertyKeyFactory> F getPropertyKeyFactory() {
+		return (F) propertyKeyFactory;
+	}
+
 	public static interface PropertyKeyFactory {
 
 		String pulseKey();

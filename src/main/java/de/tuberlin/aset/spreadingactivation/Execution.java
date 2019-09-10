@@ -366,6 +366,8 @@ public class Execution extends RunnableProcess {
 		private static final String INPUT_ACTIVATION_PROPERTY_KEY = "input_activation";
 		private static final String VERTEX_ACTIVATION_PROPERTY_KEY = "vertex_activation";
 
+		private static final String SPLIT = "_";
+
 		private final String propertyPrefix;
 
 		public DefaultPropertyKeyFactory(String propertyPrefix) {
@@ -374,34 +376,48 @@ public class Execution extends RunnableProcess {
 
 		@Override
 		public String outputActivationKey(int pulse) {
-			return propertyKey(propertyPrefix, OUTPUT_ACTIVATION_PROPERTY_KEY, pulse);
+			return propertyKey(OUTPUT_ACTIVATION_PROPERTY_KEY, pulse);
 		}
 
 		@Override
 		public String edgeActivationKey(int pulse, boolean withDirection) {
-			return propertyKey(propertyPrefix, EDGE_ACTIVATION_PROPERTY_KEY, withDirection, pulse);
+			return propertyKey(EDGE_ACTIVATION_PROPERTY_KEY, withDirection, pulse);
 		}
 
 		@Override
 		public String inputActivationKey(int pulse) {
-			return propertyKey(propertyPrefix, INPUT_ACTIVATION_PROPERTY_KEY, pulse);
+			return propertyKey(INPUT_ACTIVATION_PROPERTY_KEY, pulse);
 		}
 
 		@Override
 		public String vertexActivationKey(int pulse) {
-			return propertyKey(propertyPrefix, VERTEX_ACTIVATION_PROPERTY_KEY, pulse);
+			return propertyKey(VERTEX_ACTIVATION_PROPERTY_KEY, pulse);
 		}
 
-		private String propertyKey(String prefix, String key, boolean withDirection, int pulse) {
-			return propertyKey(key) + "_" + withDirection + "_" + pulse;
+		public String getPropertyPrefix() {
+			return propertyPrefix;
 		}
 
-		private String propertyKey(String prefix, String key, int pulse) {
-			return propertyKey(key) + "_" + pulse;
+		private String propertyKey(String key, boolean withDirection, int pulse) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(propertyPrefix);
+			sb.append(SPLIT);
+			sb.append(key);
+			sb.append(SPLIT);
+			sb.append(withDirection);
+			sb.append(SPLIT);
+			sb.append(pulse);
+			return sb.toString();
 		}
 
-		private String propertyKey(String key) {
-			return propertyPrefix + "_" + key;
+		private String propertyKey(String key, int pulse) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(propertyPrefix);
+			sb.append(SPLIT);
+			sb.append(key);
+			sb.append(SPLIT);
+			sb.append(pulse);
+			return sb.toString();
 		}
 
 	}
