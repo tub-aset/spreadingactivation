@@ -61,8 +61,12 @@ public class SpreadGraph {
 		return edge.property(propertyKeyFactory.originalIdKey()).value();
 	}
 
+	public GraphTraversalSource traversal() {
+		return traversal;
+	}
+
 	@SuppressWarnings("unchecked")
-	public <F extends PropertyKeyFactory> F getPropertyKeyFactory() {
+	public <F extends PropertyKeyFactory> F propertyKeyFactory() {
 		return (F) propertyKeyFactory;
 	}
 

@@ -55,7 +55,7 @@ public class ExecutionResult {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <F extends PropertyKeyFactory> F getPropertyKeyFactory() {
+	public <F extends PropertyKeyFactory> F propertyKeyFactory() {
 		return (F) propertyKeyFactory;
 	}
 
