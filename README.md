@@ -87,7 +87,7 @@ result.cleanup();
 Build an generation task to create a spread graph from a spreading activation result:
 
 ```java
-Generation generation = result.generateSpreadGraph() //
+Generation generation = result.generateSpreadGraph()
 		.into(TinkerGraph.open().traversal()) // default
 		.startPulse(0) // default
 		.endPulse(lastPulse) // default
@@ -136,7 +136,7 @@ Build a minimization task to create a spread graph for a single relevant vertex 
 ```java
 Vertex relevantVertex = activatedVertexes.next();
 
-RelevantMinimization minimization = RelevantMinimization.build(spreadGraph, relevantVertex.id()) //
+RelevantMinimization minimization = RelevantMinimization.build(spreadGraph, relevantVertex.id())
 		.into(TinkerGraph.open().traversal()) // default
 		.startPulse(0) // default
 		.endPulse(lastPulse) // default
