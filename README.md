@@ -176,7 +176,7 @@ GraphTraversal<Vertex,Vertex> endVertexes = minimizedSpreadGraph.endVertexes();
 
 ## Current Implementation Features
 
-* extendable configuration via interfaces (all predefined options implemented)
+* extendable configuration via interfaces (all predefined spreading activation options implemented)
 * parallel execution within spreading activation calculation
 * spread graph for detailed analysis of spreading activation process
 * all long term processes interruptible
