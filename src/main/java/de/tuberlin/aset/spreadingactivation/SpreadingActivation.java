@@ -1,8 +1,8 @@
 package de.tuberlin.aset.spreadingactivation;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
@@ -32,7 +32,7 @@ public class SpreadingActivation {
 		this.branchMode = builder.branchMode;
 		this.sendMode = builder.sendMode;
 		this.edgeWeight = builder.edgeWeight;
-		this.abortConditions = Collections.unmodifiableCollection(builder.abortConditions);
+		this.abortConditions = Collections.unmodifiableCollection(new ArrayList<>(builder.abortConditions));
 	}
 
 	public Execution.Builder execution(GraphTraversalSource traversal) {
@@ -85,7 +85,7 @@ public class SpreadingActivation {
 		private BranchMode branchMode = BranchMode.NONE;
 		private SendMode sendMode = SendMode.BASIC;
 		private EdgeWeight edgeWeight = EdgeWeight.CONSTANT;
-		private Collection<AbortCondition> abortConditions = new HashSet<>();
+		private Collection<AbortCondition> abortConditions = new ArrayList<>();
 
 		private Builder(int pulses) {
 			this.pulses = pulses;
@@ -100,7 +100,7 @@ public class SpreadingActivation {
 			this.branchMode = spreadingActivation.branchMode;
 			this.sendMode = spreadingActivation.sendMode;
 			this.edgeWeight = spreadingActivation.edgeWeight;
-			this.abortConditions = new HashSet<>(spreadingActivation.abortConditions);
+			this.abortConditions = new ArrayList<>(spreadingActivation.abortConditions);
 		}
 
 		public Builder pulses(int pulses) {
