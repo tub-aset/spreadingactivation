@@ -36,6 +36,18 @@ public class ExecutionResult {
 		return (double) vertex.property(propertyKeyFactory.vertexActivationKey(pulse)).orElse(0d);
 	}
 
+	public double activation(Object id) {
+		return activation(vertex(id));
+	}
+
+	public Vertex vertex(Object id) {
+		return traversal.V(id).next();
+	}
+
+	public double activation(Object id, int pulse) {
+		return activation(vertex(id), pulse);
+	}
+
 	public GraphTraversal<?, Vertex> activatedVertexes() {
 		return activatedVertexes(pulse);
 	}
