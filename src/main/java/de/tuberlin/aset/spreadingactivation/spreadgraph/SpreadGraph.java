@@ -20,15 +20,15 @@ public class SpreadGraph {
 		this.propertyKeyFactory = propertyKeyFactory;
 	}
 
-	public GraphTraversal<Vertex, Vertex> vertexes(Object originalId) {
+	public GraphTraversal<Vertex, Vertex> vertices(Object originalId) {
 		return traversal.V().has(propertyKeyFactory.originalIdKey(), originalId);
 	}
 
-	public GraphTraversal<Vertex, Vertex> vertexes(int pulse) {
+	public GraphTraversal<Vertex, Vertex> vertices(int pulse) {
 		return traversal.V().has(propertyKeyFactory.pulseKey(), pulse);
 	}
 
-	public GraphTraversal<Vertex, Vertex> vertexes(int pulse, Object originalId) {
+	public GraphTraversal<Vertex, Vertex> vertices(int pulse, Object originalId) {
 		return traversal.V().has(propertyKeyFactory.originalIdKey(), originalId).has(propertyKeyFactory.pulseKey(),
 				pulse);
 	}

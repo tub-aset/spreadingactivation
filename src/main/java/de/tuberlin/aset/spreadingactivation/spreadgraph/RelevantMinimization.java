@@ -21,7 +21,7 @@ public class RelevantMinimization extends Transformation {
 	public void run() {
 		started();
 		try {
-			GraphTraversal<Vertex, Vertex> originalRevelantVertexes = originalSpreadGraph.vertexes(originalId);
+			GraphTraversal<Vertex, Vertex> originalRevelantVertexes = originalSpreadGraph.vertices(originalId);
 
 			while (originalRevelantVertexes.hasNext()) {
 				if (this.isInterrupted()) {
