@@ -12,20 +12,17 @@ import de.tuberlin.aset.spreadingactivation.spreadgraph.Generation;
 public class ExecutionResult {
 
 	private final GraphTraversalSource traversal;
-	private int pulse = 0;
 	private final PropertyKeyFactory propertyKeyFactory;
+	private final int pulse;
 
-	ExecutionResult(GraphTraversalSource traversal, PropertyKeyFactory propertyKeyFactory) {
-		this.traversal = traversal;
-		this.propertyKeyFactory = propertyKeyFactory;
+	private ExecutionResult(Builder builder) {
+		this.traversal = builder.traversal;
+		this.propertyKeyFactory = builder.propertyKeyFactory;
+		this.pulse = builder.pulse;
 	}
 
 	public int pulse() {
 		return pulse;
-	}
-
-	int nextPulse() {
-		return ++pulse;
 	}
 
 	public double activation(Vertex vertex) {
@@ -88,6 +85,32 @@ public class ExecutionResult {
 
 	public Generation.Builder generateSpreadGraph() {
 		return new Generation.Builder(this, traversal, propertyKeyFactory);
+	}
+
+	public static Builder build(GraphTraversalSource traversal, PropertyKeyFactory propertyKeyFactory) {
+		return new Builder(traversal, propertyKeyFactory);
+	}
+
+	public static class Builder {
+
+		private final GraphTraversalSource traversal;
+		private final PropertyKeyFactory propertyKeyFactory;
+		private int pulse = 0;
+
+		private Builder(GraphTraversalSource traversal, PropertyKeyFactory propertyKeyFactory) {
+			this.traversal = traversal;
+			this.propertyKeyFactory = propertyKeyFactory;
+		}
+
+		public Builder pulse(int pulse) {
+			this.pulse = pulse;
+			return this;
+		}
+
+		public ExecutionResult create() {
+			return new ExecutionResult(this);
+		}
+
 	}
 
 }

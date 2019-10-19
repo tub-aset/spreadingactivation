@@ -28,7 +28,8 @@ public class Execution extends RunnableProcess {
 
 	private final Context context;
 	private final PropertyKeyFactory propertyKeyFactory;
-	private final ExecutionResult result;
+
+	private int pulse = 0;
 
 	private Execution(Builder builder) {
 		this.spreadingActivation = builder.spreadingActivation;
@@ -39,11 +40,10 @@ public class Execution extends RunnableProcess {
 				: new DefaultPropertyKeyFactory(UUID.randomUUID().toString());
 
 		this.context = new Context(spreadingActivation, this);
-		this.result = new ExecutionResult(traversal, propertyKeyFactory);
 	}
 
 	public ExecutionResult getResult() {
-		return result;
+		return ExecutionResult.build(traversal, propertyKeyFactory).pulse(pulse).create();
 	}
 
 	public void activate(GraphTraversal<?, Vertex> vertexFilter, double value) {
@@ -70,9 +70,8 @@ public class Execution extends RunnableProcess {
 		ExecutorQueue queue = new ExecutorQueue(executor, parallelTasks);
 
 		try {
-			while (!this.isInterrupted() && result.pulse() < spreadingActivation.pulses()) {
-				int pulse = result.nextPulse();
-
+			while (!this.isInterrupted() && pulse < spreadingActivation.pulses()) {
+				pulse++;
 				if (calculateOutputActivationAndEdgeActivation(queue, pulse)) {
 					queue.awaitCompleted();
 
@@ -90,13 +89,13 @@ public class Execution extends RunnableProcess {
 				}
 
 				for (AbortCondition abortCondition : spreadingActivation.abortConditions()) {
-					if (abortCondition.shouldAbort(context, result)) {
+					if (abortCondition.shouldAbort(this, context)) {
 						break;
 					}
 				}
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("exception in pulse " + result.pulse(), e);
+			throw new RuntimeException("exception in pulse " + pulse, e);
 		} finally {
 			if (shutdownExecutor) {
 				executor.shutdown();
@@ -128,7 +127,7 @@ public class Execution extends RunnableProcess {
 
 					@Override
 					public void run() {
-						double outputActivation = result.activation(fromVertex, pulse - 1);
+						double outputActivation = activation(fromVertex, pulse - 1);
 						outputActivation *= context.attenuation(fromVertex);
 
 						if (validActivation(outputActivation)) {
@@ -217,7 +216,7 @@ public class Execution extends RunnableProcess {
 						if (validActivation(inputActivation)) {
 							setPropertyValue(toVertex, propertyKeyFactory.inputActivationKey(pulse), inputActivation);
 						}
-						double lastVertexActivation = result.activation(toVertex, pulse - 1);
+						double lastVertexActivation = activation(toVertex, pulse - 1);
 						double vertexActivation = context.activation(toVertex, inputActivation + lastVertexActivation);
 						if (validActivation(vertexActivation)) {
 							setPropertyValue(toVertex, propertyKeyFactory.vertexActivationKey(pulse), vertexActivation);
@@ -240,6 +239,10 @@ public class Execution extends RunnableProcess {
 		} else {
 			element.property(key, value);
 		}
+	}
+
+	private double activation(Vertex vertex, int pulse) {
+		return (double) vertex.property(propertyKeyFactory.vertexActivationKey(pulse)).orElse(0d);
 	}
 
 	public static class Builder {
@@ -293,7 +296,7 @@ public class Execution extends RunnableProcess {
 		}
 
 		public int pulse() {
-			return execution.result.pulse();
+			return execution.pulse;
 		}
 
 		public double attenuationFactor() {
