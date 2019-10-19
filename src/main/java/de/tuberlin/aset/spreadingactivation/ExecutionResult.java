@@ -45,20 +45,20 @@ public class ExecutionResult {
 		return activation(vertex(id), pulse);
 	}
 
-	public GraphTraversal<?, Vertex> activatedVertexes() {
-		return activatedVertexes(pulse);
+	public GraphTraversal<?, Vertex> activatedVertices() {
+		return activatedVertices(pulse);
 	}
 
-	public GraphTraversal<?, Vertex> activatedVertexes(int pulse) {
+	public GraphTraversal<?, Vertex> activatedVertices(int pulse) {
 		return traversal.V().has(propertyKeyFactory.vertexActivationKey(pulse)).order()
 				.by(propertyKeyFactory.vertexActivationKey(pulse), Order.desc);
 	}
 
-	public GraphTraversal<?, Vertex> activatedVertexes(double minimumActivation) {
-		return activatedVertexes(pulse, minimumActivation);
+	public GraphTraversal<?, Vertex> activatedVertices(double minimumActivation) {
+		return activatedVertices(pulse, minimumActivation);
 	}
 
-	public GraphTraversal<?, Vertex> activatedVertexes(int pulse, double minimumActivation) {
+	public GraphTraversal<?, Vertex> activatedVertices(int pulse, double minimumActivation) {
 		return traversal.V().has(propertyKeyFactory.vertexActivationKey(pulse), P.gte(minimumActivation)).order()
 				.by(propertyKeyFactory.vertexActivationKey(pulse), Order.desc);
 	}

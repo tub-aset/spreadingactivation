@@ -41,11 +41,11 @@ public class SpreadGraph {
 		return endPulse;
 	}
 
-	public GraphTraversal<Vertex, Vertex> startVertexes() {
+	public GraphTraversal<Vertex, Vertex> startVertices() {
 		return traversal.V().not(__.inE());
 	}
 
-	public GraphTraversal<Vertex, Vertex> endVertexes() {
+	public GraphTraversal<Vertex, Vertex> endVertices() {
 		return traversal.V().not(__.outE());
 	}
 

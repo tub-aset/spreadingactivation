@@ -53,9 +53,9 @@ public class Generation extends RunnableProcess {
 	public void run() {
 		started();
 		try {
-			Iterator<Vertex> startVertexes = executionResult.activatedVertexes(startPulse);
-			while (startVertexes.hasNext()) {
-				Vertex startVertex = startVertexes.next();
+			Iterator<Vertex> startVertices = executionResult.activatedVertices(startPulse);
+			while (startVertices.hasNext()) {
+				Vertex startVertex = startVertices.next();
 				addVertex(startVertex, startPulse);
 			}
 
@@ -63,10 +63,10 @@ public class Generation extends RunnableProcess {
 				if (this.isInterrupted()) {
 					break;
 				}
-				GraphTraversal<?, Vertex> receivedActivationVertexes = originalTraversal.V()
+				GraphTraversal<?, Vertex> receivedActivationVertices = originalTraversal.V()
 						.has(originalPropertyKeyFactory.inputActivationKey(pulse), P.gt(0d));
-				while (receivedActivationVertexes.hasNext()) {
-					Vertex activatedVertex = receivedActivationVertexes.next();
+				while (receivedActivationVertices.hasNext()) {
+					Vertex activatedVertex = receivedActivationVertices.next();
 					Vertex toVertex = addVertex(activatedVertex, pulse);
 
 					Iterator<Edge> edges = originalTraversal.V(activatedVertex.id()).toE(Direction.OUT)

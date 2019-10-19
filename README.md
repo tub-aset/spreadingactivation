@@ -6,7 +6,7 @@ Implementation for apache/tinkerpop
 
 ## Usage
 
-* Pulse `0` refer to the initial activated vertexes (i.e. no output, edge nor input activation).  
+* Pulse `0` refer to the initial activated vertices (i.e. no output, edge nor input activation).  
 * The direction of edges does not matter, activation will be spread both ways (in back and forth direction).
 * Invalid or non-existent activation values (i.e. infinity, NaN, 0) will not be considered for further calculation nor stored.
   
@@ -42,7 +42,7 @@ Execution execution = spreadingActivation.execution(graph.traversal())
 		.create();
 ```
 
-Activate initial vertexes and start execution:
+Activate initial vertices and start execution:
 
 ```java
 execution.activate(__.has("name", "marko"), 1d);
@@ -68,7 +68,7 @@ Get the result of the spreading activation, including activates results, last pu
 ```java
 ExecutionResult result = execution.getResult();
 
-GraphTraversal<?, Vertex> activatedVertexes = result.activatedVertexes();
+GraphTraversal<?, Vertex> activatedVertices = result.activatedVertices();
 int lastPulse = result.pulse();
 double activation = result.activation(vertex, pulse);
 ```
@@ -121,20 +121,20 @@ boolean interrupted = generation.isInterrupted();
 boolean finished = generation.isFinished();
 ```
 
-Get the vertexes of the spread graph. Start vertex do not have incoming edges (sources), end vertexes have no outgoing edges (sinks).
+Get the vertices of the spread graph. Start vertex do not have incoming edges (sources), end vertices have no outgoing edges (sinks).
 
 ```java
 SpreadGraph spreadGraph = generation.getSpreadGraph();
 
-GraphTraversal<Vertex,Vertex> vertexes = spreadGraph.vertexes(lastPulse);
-GraphTraversal<Vertex,Vertex> startVertexes = spreadGraph.startVertexes();
-GraphTraversal<Vertex,Vertex> endVertexes = spreadGraph.endVertexes();
+GraphTraversal<Vertex,Vertex> vertices = spreadGraph.vertices(lastPulse);
+GraphTraversal<Vertex,Vertex> startVertices = spreadGraph.startVertices();
+GraphTraversal<Vertex,Vertex> endVertices = spreadGraph.endVertices();
 ```
 
-Build a minimization task to create a spread graph for a single relevant vertex from the original spreading activation (i.e. remove all edges and vertexes, which did not contribute to activate this vertex while spreading activation)
+Build a minimization task to create a spread graph for a single relevant vertex from the original spreading activation (i.e. remove all edges and vertices, which did not contribute to activate this vertex while spreading activation)
 
 ```java
-Vertex relevantVertex = activatedVertexes.next();
+Vertex relevantVertex = activatedVertices.next();
 
 RelevantMinimization minimization = RelevantMinimization.build(spreadGraph, relevantVertex.id())
 		.into(TinkerGraph.open().traversal()) // default
@@ -161,9 +161,9 @@ The result of a minimization is again a spread graph.
 ```java
 SpreadGraph minimizedSpreadGraph = minimization.getSpreadGraph();
 
-GraphTraversal<Vertex,Vertex> vertexes = minimizedSpreadGraph.vertexes(lastPulse);
-GraphTraversal<Vertex,Vertex> startVertexes = minimizedSpreadGraph.startVertexes();
-GraphTraversal<Vertex,Vertex> endVertexes = minimizedSpreadGraph.endVertexes();
+GraphTraversal<Vertex,Vertex> vertices = minimizedSpreadGraph.vertices(lastPulse);
+GraphTraversal<Vertex,Vertex> startVertices = minimizedSpreadGraph.startVertices();
+GraphTraversal<Vertex,Vertex> endVertices = minimizedSpreadGraph.endVertices();
 ```
 
 
