@@ -2,6 +2,7 @@ package de.tuberlin.aset.spreadingactivation.util;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutionException;
@@ -34,6 +35,10 @@ public class ExecutorQueue {
 		tasksQueue.add(tasks);
 
 		executeNext();
+	}
+
+	public void submit(Runnable task) {
+		submit(Collections.singleton(task).iterator());
 	}
 
 	public synchronized void interrupt() {
