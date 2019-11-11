@@ -13,11 +13,11 @@ public class SpreadGraph {
 	private final int endPulse;
 	private final PropertyKeyFactory propertyKeyFactory;
 
-	SpreadGraph(GraphTraversalSource traversal, int startPulse, int endPulse, PropertyKeyFactory propertyKeyFactory) {
-		this.traversal = traversal;
-		this.startPulse = startPulse;
-		this.endPulse = endPulse;
-		this.propertyKeyFactory = propertyKeyFactory;
+	private SpreadGraph(Builder builder) {
+		this.traversal = builder.traversal;
+		this.startPulse = builder.startPulse;
+		this.endPulse = builder.endPulse;
+		this.propertyKeyFactory = builder.propertyKeyFactory;
 	}
 
 	public GraphTraversal<Vertex, Vertex> vertices(Object originalId) {
@@ -68,6 +68,31 @@ public class SpreadGraph {
 	@SuppressWarnings("unchecked")
 	public <F extends PropertyKeyFactory> F propertyKeyFactory() {
 		return (F) propertyKeyFactory;
+	}
+
+	public static final Builder build(GraphTraversalSource traversal, int startPulse, int endPulse,
+			PropertyKeyFactory propertyKeyFactory) {
+		return new Builder(traversal, startPulse, endPulse, propertyKeyFactory);
+	}
+
+	public static class Builder {
+
+		private final GraphTraversalSource traversal;
+		private int startPulse;
+		private int endPulse;
+		private final PropertyKeyFactory propertyKeyFactory;
+
+		private Builder(GraphTraversalSource traversal, int startPulse, int endPulse,
+				PropertyKeyFactory propertyKeyFactory) {
+			this.traversal = traversal;
+			this.startPulse = startPulse;
+			this.endPulse = endPulse;
+			this.propertyKeyFactory = propertyKeyFactory;
+		}
+
+		public SpreadGraph create() {
+			return new SpreadGraph(this);
+		}
 	}
 
 	public static interface PropertyKeyFactory {

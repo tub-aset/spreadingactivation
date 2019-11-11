@@ -31,7 +31,7 @@ public abstract class Transformation extends RunnableProcess {
 
 		this.originalSpreadGraph = builder.originalSpreadGraph;
 
-		this.spreadGraph = new SpreadGraph(traversal, startPulse, endPulse, propertyKeyFactory);
+		this.spreadGraph = SpreadGraph.build(traversal, startPulse, endPulse, propertyKeyFactory).create();
 	}
 
 	public SpreadGraph getSpreadGraph() {
@@ -73,7 +73,7 @@ public abstract class Transformation extends RunnableProcess {
 		private int endPulse;
 		private PropertyKeyFactory propertyKeyFactory;
 
-		Builder(SpreadGraph originalSpreadGraph) {
+		protected Builder(SpreadGraph originalSpreadGraph) {
 			this.originalSpreadGraph = originalSpreadGraph;
 
 			this.startPulse = originalSpreadGraph.startPulse();

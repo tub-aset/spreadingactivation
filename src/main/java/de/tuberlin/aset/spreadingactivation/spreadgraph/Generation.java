@@ -42,7 +42,7 @@ public class Generation extends RunnableProcess {
 		this.originalTraversal = builder.originalTraversal;
 		this.originalPropertyKeyFactory = builder.originalPropertyKeyFactory;
 
-		this.spreadGraph = new SpreadGraph(traversal, startPulse, endPulse, propertyKeyFactory);
+		this.spreadGraph = SpreadGraph.build(traversal, startPulse, endPulse, propertyKeyFactory).create();
 	}
 
 	public SpreadGraph getSpreadGraph() {
@@ -122,6 +122,11 @@ public class Generation extends RunnableProcess {
 				.by(propertyKeyFactory.pulseKey(), Order.desc).next();
 	}
 
+	public static final Builder build(ExecutionResult result, GraphTraversalSource traveral,
+			Execution.PropertyKeyFactory propertyKeyFactory) {
+		return new Builder(result, traveral, propertyKeyFactory);
+	}
+
 	public static class Builder {
 
 		private final ExecutionResult executionResult;
@@ -133,7 +138,7 @@ public class Generation extends RunnableProcess {
 		private int endPulse;
 		private PropertyKeyFactory propertyKeyFactory;
 
-		public Builder(ExecutionResult executionResult, GraphTraversalSource originalTraversal,
+		private Builder(ExecutionResult executionResult, GraphTraversalSource originalTraversal,
 				Execution.PropertyKeyFactory originalPropertyKeyFactory) {
 			this.executionResult = executionResult;
 			this.originalTraversal = originalTraversal;

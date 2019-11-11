@@ -84,7 +84,7 @@ public class ExecutionResult {
 	}
 
 	public Generation.Builder generateSpreadGraph() {
-		return new Generation.Builder(this, traversal, propertyKeyFactory);
+		return Generation.build(this, traversal, propertyKeyFactory);
 	}
 
 	public static Builder build(GraphTraversalSource traversal, PropertyKeyFactory propertyKeyFactory) {
