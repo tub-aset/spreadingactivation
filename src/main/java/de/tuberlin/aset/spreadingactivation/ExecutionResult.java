@@ -21,6 +21,15 @@ public class ExecutionResult {
 		this.pulse = builder.pulse;
 	}
 
+	public GraphTraversalSource traversal() {
+		return traversal;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <F extends PropertyKeyFactory> F propertyKeyFactory() {
+		return (F) propertyKeyFactory;
+	}
+
 	public int pulse() {
 		return pulse;
 	}
@@ -61,11 +70,6 @@ public class ExecutionResult {
 	public GraphTraversal<?, Vertex> activatedVertices(int pulse, double minimumActivation) {
 		return traversal.V().has(propertyKeyFactory.vertexActivationKey(pulse), P.gte(minimumActivation)).order()
 				.by(propertyKeyFactory.vertexActivationKey(pulse), Order.desc);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <F extends PropertyKeyFactory> F propertyKeyFactory() {
-		return (F) propertyKeyFactory;
 	}
 
 	public void cleanup() {
