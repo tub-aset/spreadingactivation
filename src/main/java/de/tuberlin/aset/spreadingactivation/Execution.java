@@ -37,7 +37,7 @@ public class Execution extends RunnableProcess {
 		this.propertyKeyFactory = builder.propertyKeyFactory != null ? builder.propertyKeyFactory
 				: new DefaultPropertyKeyFactory(UUID.randomUUID().toString());
 
-		this.context = new Context(builder.spreadingActivation, this);
+		this.context = new Context(builder.configuration, this);
 	}
 
 	public ExecutionResult getResult() {
@@ -243,7 +243,7 @@ public class Execution extends RunnableProcess {
 
 	public static class Builder {
 
-		private final SpreadingActivation spreadingActivation;
+		private final Configuration configuration;
 		private final GraphTraversalSource traversal;
 
 		private ExecutorService executor;
@@ -251,8 +251,8 @@ public class Execution extends RunnableProcess {
 
 		private PropertyKeyFactory propertyKeyFactory;
 
-		Builder(SpreadingActivation spreadingActivation, GraphTraversalSource traversal) {
-			this.spreadingActivation = spreadingActivation;
+		Builder(Configuration configuration, GraphTraversalSource traversal) {
+			this.configuration = configuration;
 			this.traversal = traversal;
 		}
 
@@ -279,16 +279,16 @@ public class Execution extends RunnableProcess {
 
 	public static class Context implements PropertyKeyFactory {
 
-		private final SpreadingActivation spreadingActivation;
+		private final Configuration configuration;
 		private final Execution execution;
 
-		private Context(SpreadingActivation spreadingActivation, Execution execution) {
-			this.spreadingActivation = spreadingActivation;
+		private Context(Configuration configuration, Execution execution) {
+			this.configuration = configuration;
 			this.execution = execution;
 		}
 
 		public int pulses() {
-			return spreadingActivation.pulses();
+			return configuration.pulses();
 		}
 
 		public int pulse() {
@@ -300,32 +300,32 @@ public class Execution extends RunnableProcess {
 		}
 
 		public Iterator<Vertex> startingVertices(Context context) {
-			return spreadingActivation.pulseInception().startingVertices(this);
+			return configuration.pulseInception().startingVertices(this);
 		}
 
 		public GraphTraversal<?, Edge> allowedEdges(Vertex vertex) {
 			return execution.traversal.V(vertex.id()).toE(Direction.BOTH)
-					.filter(spreadingActivation.sendMode().allowedEdges(this, vertex));
+					.filter(configuration.sendMode().allowedEdges(this, vertex));
 		}
 
 		public double edgeWeight(Edge edge, boolean withDirection) {
-			return spreadingActivation.edgeWeight().edgeWeight(this, edge, withDirection);
+			return configuration.edgeWeight().edgeWeight(this, edge, withDirection);
 		}
 
 		public double branch(Vertex vertex) {
-			return spreadingActivation.branchMode().branch(this, vertex);
+			return configuration.branchMode().branch(this, vertex);
 		}
 
 		public double attenuation(Vertex vertex) {
-			return spreadingActivation.attenuationMode().attenuation(this, vertex);
+			return configuration.attenuationMode().attenuation(this, vertex);
 		}
 
 		public double activation(Vertex vertex, double x) {
-			return spreadingActivation.activationMode().activation(this, vertex, x);
+			return configuration.activationMode().activation(this, vertex, x);
 		}
 
 		public Collection<AbortCondition> abortConditions() {
-			return spreadingActivation.abortConditions();
+			return configuration.abortConditions();
 		}
 
 		@Override

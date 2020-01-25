@@ -13,7 +13,7 @@ import de.tuberlin.aset.spreadingactivation.mode.EdgeWeight;
 import de.tuberlin.aset.spreadingactivation.mode.PulseInception;
 import de.tuberlin.aset.spreadingactivation.mode.SendMode;
 
-public class SpreadingActivation {
+public class SpreadingActivation implements Configuration {
 
 	private final int pulses;
 	private final PulseInception pulseInception;
@@ -69,6 +69,14 @@ public class SpreadingActivation {
 
 	public Collection<AbortCondition> abortConditions() {
 		return abortConditions;
+	}
+
+	public static Builder build(int pulses) {
+		return new Builder(pulses);
+	}
+
+	public static Builder build(SpreadingActivation spreadingActivation) {
+		return new Builder(spreadingActivation);
 	}
 
 	public static class Builder {
@@ -141,14 +149,6 @@ public class SpreadingActivation {
 			return new SpreadingActivation(this);
 		}
 
-	}
-
-	public static Builder build(int pulses) {
-		return new Builder(pulses);
-	}
-
-	public static Builder build(SpreadingActivation spreadingActivation) {
-		return new Builder(spreadingActivation);
 	}
 
 }
