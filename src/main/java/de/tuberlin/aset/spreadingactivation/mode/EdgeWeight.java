@@ -8,12 +8,16 @@ public interface EdgeWeight {
 
 	double edgeWeight(Context context, Edge edge, boolean withDirection);
 
-	public static final EdgeWeight CONSTANT = new EdgeWeight() {
+	public static final class Default {
 
-		@Override
-		public double edgeWeight(Context context, Edge edge, boolean withDirection) {
-			return 1d;
-		}
-	};
+		public static final EdgeWeight CONSTANT = new EdgeWeight() {
+
+			@Override
+			public double edgeWeight(Context context, Edge edge, boolean withDirection) {
+				return 1d;
+			}
+		};
+
+	}
 
 }

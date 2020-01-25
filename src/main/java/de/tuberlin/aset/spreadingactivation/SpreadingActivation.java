@@ -10,14 +10,15 @@ import de.tuberlin.aset.spreadingactivation.mode.ActivationMode;
 import de.tuberlin.aset.spreadingactivation.mode.AttenuationMode;
 import de.tuberlin.aset.spreadingactivation.mode.BranchMode;
 import de.tuberlin.aset.spreadingactivation.mode.EdgeWeight;
+import de.tuberlin.aset.spreadingactivation.mode.PulseInception;
 import de.tuberlin.aset.spreadingactivation.mode.SendMode;
 
 public class SpreadingActivation {
+
 	private final int pulses;
-	private final double minimumActivation;
+	private final PulseInception pulseInception;
 	private final ActivationMode activationMode;
 	private final AttenuationMode attenuationMode;
-	private final double attenuationFactor;
 	private final BranchMode branchMode;
 	private final SendMode sendMode;
 	private final EdgeWeight edgeWeight;
@@ -25,10 +26,9 @@ public class SpreadingActivation {
 
 	private SpreadingActivation(Builder builder) {
 		this.pulses = builder.pulses;
-		this.minimumActivation = builder.minimumActivation;
+		this.pulseInception = builder.pulseInception;
 		this.activationMode = builder.activationMode;
 		this.attenuationMode = builder.attenuationMode;
-		this.attenuationFactor = builder.attenuationFactor;
 		this.branchMode = builder.branchMode;
 		this.sendMode = builder.sendMode;
 		this.edgeWeight = builder.edgeWeight;
@@ -43,8 +43,8 @@ public class SpreadingActivation {
 		return pulses;
 	}
 
-	public double minimumActivation() {
-		return minimumActivation;
+	public PulseInception pulseInception() {
+		return pulseInception;
 	}
 
 	public ActivationMode activationMode() {
@@ -53,10 +53,6 @@ public class SpreadingActivation {
 
 	public AttenuationMode attenuationMode() {
 		return attenuationMode;
-	}
-
-	public double attenuationFactor() {
-		return attenuationFactor;
 	}
 
 	public BranchMode branchMode() {
@@ -78,13 +74,12 @@ public class SpreadingActivation {
 	public static class Builder {
 
 		private int pulses;
-		private double minimumActivation = 0;
-		private ActivationMode activationMode = ActivationMode.IDENTITY;
-		private AttenuationMode attenuationMode = AttenuationMode.IGNORE;
-		private double attenuationFactor = 1;
-		private BranchMode branchMode = BranchMode.NONE;
-		private SendMode sendMode = SendMode.BASIC;
-		private EdgeWeight edgeWeight = EdgeWeight.CONSTANT;
+		private PulseInception pulseInception = PulseInception.Default.MINIMUM_ACTIVATION(0);
+		private ActivationMode activationMode = ActivationMode.Default.IDENTITY;
+		private AttenuationMode attenuationMode = AttenuationMode.Default.IGNORE;
+		private BranchMode branchMode = BranchMode.Default.NONE;
+		private SendMode sendMode = SendMode.Default.BASIC;
+		private EdgeWeight edgeWeight = EdgeWeight.Default.CONSTANT;
 		private Collection<AbortCondition> abortConditions = new ArrayList<>();
 
 		private Builder(int pulses) {
@@ -93,10 +88,9 @@ public class SpreadingActivation {
 
 		public Builder(SpreadingActivation spreadingActivation) {
 			this.pulses = spreadingActivation.pulses;
-			this.minimumActivation = spreadingActivation.minimumActivation;
+			this.pulseInception = spreadingActivation.pulseInception;
 			this.activationMode = spreadingActivation.activationMode;
 			this.attenuationMode = spreadingActivation.attenuationMode;
-			this.attenuationFactor = spreadingActivation.attenuationFactor;
 			this.branchMode = spreadingActivation.branchMode;
 			this.sendMode = spreadingActivation.sendMode;
 			this.edgeWeight = spreadingActivation.edgeWeight;
@@ -108,8 +102,8 @@ public class SpreadingActivation {
 			return this;
 		}
 
-		public Builder minimumActivation(double minimumActivation) {
-			this.minimumActivation = minimumActivation;
+		public Builder pulseInception(PulseInception pulseInception) {
+			this.pulseInception = pulseInception;
 			return this;
 		}
 
@@ -120,11 +114,6 @@ public class SpreadingActivation {
 
 		public Builder attenuationMode(AttenuationMode attenuationMode) {
 			this.attenuationMode = attenuationMode;
-			return this;
-		}
-
-		public Builder attenuationFactor(double attenuationFactor) {
-			this.attenuationFactor = attenuationFactor;
 			return this;
 		}
 

@@ -34,18 +34,22 @@ public final class SpreadingMode implements SendMode {
 		return __.and(traversals);
 	}
 
-	public static final SpreadingMode BASIC = new SpreadingMode(SendMode.BASIC);
+	public static final class Default {
 
-	public static final SpreadingMode RECENT_RECEIVER = new SpreadingMode(SendMode.RECENT_RECEIVER);
+		public static final SpreadingMode BASIC = new SpreadingMode(SendMode.Default.BASIC);
 
-	public static final SpreadingMode FORWARD = new SpreadingMode(SendMode.FORWARD);
+		public static final SpreadingMode RECENT_RECEIVER = new SpreadingMode(SendMode.Default.RECENT_RECEIVER);
 
-	public static final SpreadingMode FORWARD_RECENT_RECEIVER = new SpreadingMode(SendMode.FORWARD,
-			SendMode.RECENT_RECEIVER);
+		public static final SpreadingMode FORWARD = new SpreadingMode(SendMode.Default.FORWARD);
 
-	public static final SpreadingMode FORWARD_LOOP = new SpreadingMode(SendMode.FORWARD_LOOP);
+		public static final SpreadingMode FORWARD_RECENT_RECEIVER = new SpreadingMode(SendMode.Default.FORWARD,
+				SendMode.Default.RECENT_RECEIVER);
 
-	public static final SpreadingMode FORWARD_LOOP_RECENT_RECEIVER = new SpreadingMode(SendMode.FORWARD_LOOP,
-			SendMode.RECENT_RECEIVER);
+		public static final SpreadingMode FORWARD_LOOP = new SpreadingMode(SendMode.Default.FORWARD_LOOP);
+
+		public static final SpreadingMode FORWARD_LOOP_RECENT_RECEIVER = new SpreadingMode(
+				SendMode.Default.FORWARD_LOOP, SendMode.Default.RECENT_RECEIVER);
+
+	}
 
 }

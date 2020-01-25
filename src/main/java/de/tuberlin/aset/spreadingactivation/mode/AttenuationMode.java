@@ -8,28 +8,35 @@ public interface AttenuationMode {
 
 	double attenuation(Context context, Vertex vertex);
 
-	public static final AttenuationMode IGNORE = new AttenuationMode() {
+	public static final class Default {
 
-		@Override
-		public double attenuation(Context context, Vertex vertex) {
-			return 1;
+		public static final AttenuationMode IGNORE = new AttenuationMode() {
+
+			@Override
+			public double attenuation(Context context, Vertex vertex) {
+				return 1;
+			}
+		};
+
+		public static final AttenuationMode FIXED(double attenuationFactor) {
+			return new AttenuationMode() {
+				@Override
+				public double attenuation(Context context, Vertex vertex) {
+					return attenuationFactor;
+				}
+			};
 		}
-	};
 
-	public static final AttenuationMode FIXED = new AttenuationMode() {
+		public static final AttenuationMode INCREASING(double attenuationFactor) {
+			return new AttenuationMode() {
 
-		@Override
-		public double attenuation(Context context, Vertex vertex) {
-			return context.attenuationFactor();
+				@Override
+				public double attenuation(Context context, Vertex vertex) {
+					return Math.pow(0.99d, context.pulse()) * attenuationFactor;
+				}
+			};
 		}
-	};
 
-	public static final AttenuationMode INCREASING = new AttenuationMode() {
-
-		@Override
-		public double attenuation(Context context, Vertex vertex) {
-			return Math.pow(0.99d, context.pulse()) * context.attenuationFactor();
-		}
-	};
+	}
 
 }

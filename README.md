@@ -20,13 +20,12 @@ Build a spreading activation configuration:
 int pulses = 4;
 
 SpreadingActivation spreadingActivation = SpreadingActivation.build(pulses)
-		.minimumOutputActivation(0.1d)
-		.activationMode(ActivationMode.LOG10)
-		.attenuationMode(AttenuationMode.FIXED)
-		.attenuationFactor(0.99d)
-		.branchMode(BranchMode.NONE)
-		.sendMode(SpreadingMode.FORWARD)
-		.edgeWeight(EdgeWeight.CONSTANT)
+		.pulseInception(PulseInception.Default.MINIMUM_ACTIVATION(0.1d))
+		.activationMode(ActivationMode.Default.LOG10)
+		.attenuationMode(AttenuationMode.Default.FIXED(0.99d))
+		.branchMode(BranchMode.Default.NONE)
+		.sendMode(SpreadingMode.Default.FORWARD)
+		.edgeWeight(EdgeWeight.Default.CONSTANT)
 		.create();
 ```
 

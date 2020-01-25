@@ -1,11 +1,11 @@
 package de.tuberlin.aset.spreadingactivation;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -20,7 +20,6 @@ import de.tuberlin.aset.spreadingactivation.util.RunnableProcess;
 
 public class Execution extends RunnableProcess {
 
-	private final SpreadingActivation spreadingActivation;
 	private final GraphTraversalSource traversal;
 
 	private final ExecutorService executor;
@@ -32,14 +31,13 @@ public class Execution extends RunnableProcess {
 	private int pulse = 0;
 
 	private Execution(Builder builder) {
-		this.spreadingActivation = builder.spreadingActivation;
 		this.traversal = builder.traversal;
 		this.executor = builder.executor;
 		this.parallelTasks = builder.parallelTasks;
 		this.propertyKeyFactory = builder.propertyKeyFactory != null ? builder.propertyKeyFactory
 				: new DefaultPropertyKeyFactory(UUID.randomUUID().toString());
 
-		this.context = new Context(spreadingActivation, this);
+		this.context = new Context(builder.spreadingActivation, this);
 	}
 
 	public ExecutionResult getResult() {
@@ -70,7 +68,7 @@ public class Execution extends RunnableProcess {
 		ExecutorQueue queue = new ExecutorQueue(executor, parallelTasks);
 
 		try {
-			while (!this.isInterrupted() && pulse < spreadingActivation.pulses()) {
+			while (!this.isInterrupted() && pulse < context.pulses()) {
 				pulse++;
 				if (calculateOutputActivationAndEdgeActivation(queue, pulse)) {
 					queue.awaitCompleted();
@@ -88,7 +86,7 @@ public class Execution extends RunnableProcess {
 					break;
 				}
 
-				for (AbortCondition abortCondition : spreadingActivation.abortConditions()) {
+				for (AbortCondition abortCondition : context.abortConditions()) {
 					if (abortCondition.shouldAbort(this, context)) {
 						break;
 					}
@@ -105,11 +103,9 @@ public class Execution extends RunnableProcess {
 	}
 
 	private boolean calculateOutputActivationAndEdgeActivation(ExecutorQueue queue, int pulse) {
-		GraphTraversal<Vertex, Vertex> vertexWithPreviousActivation = traversal.V().has(
-				propertyKeyFactory.vertexActivationKey(pulse - 1),
-				P.gte(spreadingActivation.minimumActivation()));
+		Iterator<Vertex> startingVertices = context.startingVertices(context);
 
-		if (!vertexWithPreviousActivation.hasNext()) {
+		if (!startingVertices.hasNext()) {
 			return false;
 		}
 
@@ -117,12 +113,12 @@ public class Execution extends RunnableProcess {
 
 			@Override
 			public boolean hasNext() {
-				return vertexWithPreviousActivation.hasNext();
+				return startingVertices.hasNext();
 			}
 
 			@Override
 			public Runnable next() {
-				Vertex fromVertex = vertexWithPreviousActivation.next();
+				Vertex fromVertex = startingVertices.next();
 				return new Runnable() {
 
 					@Override
@@ -291,20 +287,20 @@ public class Execution extends RunnableProcess {
 			this.execution = execution;
 		}
 
-		public GraphTraversalSource traversal() {
-			return execution.traversal;
+		public int pulses() {
+			return spreadingActivation.pulses();
 		}
 
 		public int pulse() {
 			return execution.pulse;
 		}
 
-		public double attenuationFactor() {
-			return spreadingActivation.attenuationFactor();
+		public GraphTraversalSource traversal() {
+			return execution.traversal;
 		}
 
-		public double minimumActivation() {
-			return spreadingActivation.minimumActivation();
+		public Iterator<Vertex> startingVertices(Context context) {
+			return spreadingActivation.pulseInception().startingVertices(this);
 		}
 
 		public GraphTraversal<?, Edge> allowedEdges(Vertex vertex) {
@@ -326,6 +322,10 @@ public class Execution extends RunnableProcess {
 
 		public double activation(Vertex vertex, double x) {
 			return spreadingActivation.activationMode().activation(this, vertex, x);
+		}
+
+		public Collection<AbortCondition> abortConditions() {
+			return spreadingActivation.abortConditions();
 		}
 
 		@Override
