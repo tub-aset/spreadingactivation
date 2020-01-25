@@ -14,7 +14,7 @@ import de.tuberlin.aset.spreadingactivation.mode.SendMode;
 
 public class SpreadingActivation {
 	private final int pulses;
-	private final double minimumOutputActivation;
+	private final double minimumActivation;
 	private final ActivationMode activationMode;
 	private final AttenuationMode attenuationMode;
 	private final double attenuationFactor;
@@ -25,7 +25,7 @@ public class SpreadingActivation {
 
 	private SpreadingActivation(Builder builder) {
 		this.pulses = builder.pulses;
-		this.minimumOutputActivation = builder.minimumOutputActivation;
+		this.minimumActivation = builder.minimumActivation;
 		this.activationMode = builder.activationMode;
 		this.attenuationMode = builder.attenuationMode;
 		this.attenuationFactor = builder.attenuationFactor;
@@ -43,8 +43,8 @@ public class SpreadingActivation {
 		return pulses;
 	}
 
-	public double minimumOutputActivation() {
-		return minimumOutputActivation;
+	public double minimumActivation() {
+		return minimumActivation;
 	}
 
 	public ActivationMode activationMode() {
@@ -78,7 +78,7 @@ public class SpreadingActivation {
 	public static class Builder {
 
 		private int pulses;
-		private double minimumOutputActivation = 0;
+		private double minimumActivation = 0;
 		private ActivationMode activationMode = ActivationMode.IDENTITY;
 		private AttenuationMode attenuationMode = AttenuationMode.IGNORE;
 		private double attenuationFactor = 1;
@@ -93,7 +93,7 @@ public class SpreadingActivation {
 
 		public Builder(SpreadingActivation spreadingActivation) {
 			this.pulses = spreadingActivation.pulses;
-			this.minimumOutputActivation = spreadingActivation.minimumOutputActivation;
+			this.minimumActivation = spreadingActivation.minimumActivation;
 			this.activationMode = spreadingActivation.activationMode;
 			this.attenuationMode = spreadingActivation.attenuationMode;
 			this.attenuationFactor = spreadingActivation.attenuationFactor;
@@ -108,8 +108,8 @@ public class SpreadingActivation {
 			return this;
 		}
 
-		public Builder minimumOutputActivation(double minimumOutputActivation) {
-			this.minimumOutputActivation = minimumOutputActivation;
+		public Builder minimumActivation(double minimumActivation) {
+			this.minimumActivation = minimumActivation;
 			return this;
 		}
 

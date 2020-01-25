@@ -107,7 +107,7 @@ public class Execution extends RunnableProcess {
 	private boolean calculateOutputActivationAndEdgeActivation(ExecutorQueue queue, int pulse) {
 		GraphTraversal<Vertex, Vertex> vertexWithPreviousActivation = traversal.V().has(
 				propertyKeyFactory.vertexActivationKey(pulse - 1),
-				P.gte(spreadingActivation.minimumOutputActivation()));
+				P.gte(spreadingActivation.minimumActivation()));
 
 		if (!vertexWithPreviousActivation.hasNext()) {
 			return false;
@@ -303,8 +303,8 @@ public class Execution extends RunnableProcess {
 			return spreadingActivation.attenuationFactor();
 		}
 
-		public double minimumOutputActivation() {
-			return spreadingActivation.minimumOutputActivation();
+		public double minimumActivation() {
+			return spreadingActivation.minimumActivation();
 		}
 
 		public GraphTraversal<?, Edge> allowedEdges(Vertex vertex) {
