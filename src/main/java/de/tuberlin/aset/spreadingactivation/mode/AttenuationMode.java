@@ -19,22 +19,49 @@ public interface AttenuationMode {
 		};
 
 		public static final AttenuationMode FIXED(double attenuationFactor) {
-			return new AttenuationMode() {
-				@Override
-				public double attenuation(Context context, Vertex vertex) {
-					return attenuationFactor;
-				}
-			};
+			return new FixedAttenuationMode(attenuationFactor);
+		}
+
+		public static final class FixedAttenuationMode implements AttenuationMode {
+
+			private double attenuationFactor;
+
+			private FixedAttenuationMode(double attenuationFactor) {
+				this.attenuationFactor = attenuationFactor;
+			}
+
+			@Override
+			public double attenuation(Context context, Vertex vertex) {
+				return attenuationFactor;
+			}
+
+			public double getAttenuationFactor() {
+				return attenuationFactor;
+			}
+
 		}
 
 		public static final AttenuationMode INCREASING(double attenuationFactor) {
-			return new AttenuationMode() {
+			return new IncreasingAttenuationMode(attenuationFactor);
+		}
 
-				@Override
-				public double attenuation(Context context, Vertex vertex) {
-					return Math.pow(0.99d, context.pulse()) * attenuationFactor;
-				}
-			};
+		public static final class IncreasingAttenuationMode implements AttenuationMode {
+
+			private double attenuationFactor;
+
+			private IncreasingAttenuationMode(double attenuationFactor) {
+				this.attenuationFactor = attenuationFactor;
+			}
+
+			@Override
+			public double attenuation(Context context, Vertex vertex) {
+				return Math.pow(0.99d, context.pulse()) * attenuationFactor;
+			}
+
+			public double getAttenuationFactor() {
+				return attenuationFactor;
+			}
+
 		}
 
 	}
