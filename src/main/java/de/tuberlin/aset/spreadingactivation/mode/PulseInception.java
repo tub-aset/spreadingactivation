@@ -13,15 +13,28 @@ public interface PulseInception {
 
 	public static final class Default {
 
-		public static final PulseInception MINIMUM_ACTIVATION(double minimumActivation) {
-			return new PulseInception() {
+		public static final MinimumActivationPulseInception MINIMUM_ACTIVATION(double minimumActivation) {
+			return new MinimumActivationPulseInception(minimumActivation);
+		}
 
-				@Override
-				public Iterator<Vertex> startingVertices(Context context) {
-					return context.traversal().V().has(context.vertexActivationKey(context.pulse() - 1),
-							P.gte(minimumActivation));
-				}
-			};
+		public static final class MinimumActivationPulseInception implements PulseInception {
+
+			private double minimumActivation;
+
+			private MinimumActivationPulseInception(double minimumActivation) {
+				this.minimumActivation = minimumActivation;
+			}
+
+			@Override
+			public Iterator<Vertex> startingVertices(Context context) {
+				return context.traversal().V().has(context.vertexActivationKey(context.pulse() - 1),
+						P.gte(minimumActivation));
+			}
+
+			public double getMinimumActivation() {
+				return minimumActivation;
+			}
+
 		}
 
 	}

@@ -18,7 +18,7 @@ public interface AttenuationMode {
 			}
 		};
 
-		public static final AttenuationMode FIXED(double attenuationFactor) {
+		public static final FixedAttenuationMode FIXED(double attenuationFactor) {
 			return new FixedAttenuationMode(attenuationFactor);
 		}
 
@@ -41,7 +41,7 @@ public interface AttenuationMode {
 
 		}
 
-		public static final AttenuationMode INCREASING(double attenuationFactor) {
+		public static final IncreasingAttenuationMode INCREASING(double attenuationFactor) {
 			return new IncreasingAttenuationMode(attenuationFactor);
 		}
 
