@@ -2,6 +2,8 @@ package de.tuberlin.aset.spreadingactivation;
 
 import java.util.Collection;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+
 import de.tuberlin.aset.spreadingactivation.mode.ActivationMode;
 import de.tuberlin.aset.spreadingactivation.mode.AttenuationMode;
 import de.tuberlin.aset.spreadingactivation.mode.BranchMode;
@@ -26,5 +28,7 @@ public interface Configuration {
 	EdgeWeight edgeWeight();
 
 	Collection<AbortCondition> abortConditions();
+
+	Execution.Builder execution(GraphTraversalSource traversal);
 
 }
