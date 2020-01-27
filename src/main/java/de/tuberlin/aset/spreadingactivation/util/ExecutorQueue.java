@@ -1,8 +1,6 @@
 package de.tuberlin.aset.spreadingactivation.util;
 
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutionException;
@@ -13,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 public class ExecutorQueue {
 	private ExecutorService executor;
 	private int maxParallelTasks;
-	private UncaughtExceptionHandler exceptionHandler;
 
 	private boolean interrupted = false;
 	private int submittedTasks = 0;
@@ -21,13 +18,8 @@ public class ExecutorQueue {
 	private Collection<Future<?>> futures = new LinkedHashSet<>();
 
 	public ExecutorQueue(ExecutorService executor, int maxSubmittedTasks) {
-		this(executor, maxSubmittedTasks, null);
-	}
-
-	public ExecutorQueue(ExecutorService executor, int maxSubmittedTasks, UncaughtExceptionHandler exceptionHandler) {
 		this.executor = executor;
 		this.maxParallelTasks = maxSubmittedTasks;
-		this.exceptionHandler = exceptionHandler;
 	}
 
 	public synchronized void submit(Iterator<Runnable> tasks) {
@@ -37,13 +29,10 @@ public class ExecutorQueue {
 		executeNext();
 	}
 
-	public void submit(Runnable task) {
-		submit(Collections.singleton(task).iterator());
-	}
-
 	public synchronized void interrupt() {
 		interrupted = true;
 		tasksQueue.clear();
+		notify();
 	}
 
 	public boolean isInterrupted() {
@@ -51,7 +40,7 @@ public class ExecutorQueue {
 	}
 
 	public boolean hasCompleted() {
-		return tasksQueue.isEmpty() && submittedTasks == 0;
+		return tasksQueue.isEmpty() && submittedTasks == 0 && futures.isEmpty();
 	}
 
 	private synchronized void executeNext() {
@@ -68,20 +57,18 @@ public class ExecutorQueue {
 						exception = e;
 					}
 					if (exception != null) {
-						if (exceptionHandler != null) {
-							exceptionHandler.uncaughtException(Thread.currentThread(), exception);
-						} else {
-							Future<?> failed = new FailedFuture<>(exception);
-							futures.add(failed);
-						}
-					} else if (next != null) {
+						Future<?> failed = new FailedFuture<>(exception);
+						futures.add(failed);
+					} else if (next == null) {
+						Future<?> failed = new FailedFuture<>(new NullPointerException("runnable is null"));
+						futures.add(failed);
+					} else {
 						RunnableTask runnableTask = new RunnableTask(this, next);
 						Future<?> submit = executor.submit(runnableTask);
-						if (exceptionHandler == null) {
-							futures.add(submit);
-						}
+						futures.add(submit);
 						submittedTasks++;
 					}
+					notify();
 				} else {
 					taskQueueIterator.remove();
 					continue;
@@ -90,9 +77,6 @@ public class ExecutorQueue {
 				break;
 			}
 		}
-		if (exceptionHandler != null) {
-			notifyAll();
-		}
 	}
 
 	private synchronized void finishedTask(RunnableTask runnableTask) {
@@ -100,33 +84,23 @@ public class ExecutorQueue {
 		executeNext();
 	}
 
-	public void awaitCompleted() throws InterruptedException {
-		if (exceptionHandler != null) {
-			while (!hasCompleted()) {
-				synchronized (this) {
+	public void awaitCompleted() throws InterruptedException, ExecutionException {
+		while ((!interrupted && !hasCompleted()) || (interrupted && !futures.isEmpty())) {
+			if (!interrupted && (executor.isShutdown() || executor.isTerminated())) {
+				throw new IllegalStateException();
+			}
+
+			Future<?> future;
+			synchronized (this) {
+				while (futures.isEmpty()) {
 					wait();
 				}
+				Iterator<Future<?>> iterator = futures.iterator();
+				future = iterator.next();
+				iterator.remove();
 			}
-		} else {
-			while (!(!interrupted && tasksQueue.isEmpty() && futures.isEmpty()) || (interrupted && futures.isEmpty())) {
-				Future<?> future = null;
-				synchronized (this) {
-					if (!futures.isEmpty()) {
-						Iterator<Future<?>> iterator = futures.iterator();
-						future = iterator.next();
-						iterator.remove();
-					}
-				}
-				if (future != null) {
-					try {
-						future.get();
-					} catch (ExecutionException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			}
+			future.get();
 		}
-
 	}
 
 	private static class RunnableTask implements Runnable {
@@ -141,16 +115,11 @@ public class ExecutorQueue {
 
 		@Override
 		public void run() {
-			if (queue.exceptionHandler != null) {
-				try {
-					runnable.run();
-				} catch (Exception e) {
-					queue.exceptionHandler.uncaughtException(Thread.currentThread(), e);
-				}
-			} else {
+			try {
 				runnable.run();
+			} finally {
+				queue.finishedTask(this);
 			}
-			queue.finishedTask(this);
 		}
 
 	}
