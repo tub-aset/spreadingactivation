@@ -13,7 +13,7 @@ import de.tuberlin.aset.spreadingactivation.mode.EdgeWeight;
 import de.tuberlin.aset.spreadingactivation.mode.PulseInception;
 import de.tuberlin.aset.spreadingactivation.mode.SendMode;
 
-public class SpreadingActivation implements Configuration {
+public final class SpreadingActivation implements Configuration {
 
 	private final int pulses;
 	private final PulseInception pulseInception;
@@ -35,38 +35,47 @@ public class SpreadingActivation implements Configuration {
 		this.abortConditions = Collections.unmodifiableCollection(new ArrayList<>(builder.abortConditions));
 	}
 
+	@Override
 	public Execution.Builder execution(GraphTraversalSource traversal) {
 		return new Execution.Builder(this, traversal);
 	}
 
+	@Override
 	public int pulses() {
 		return pulses;
 	}
 
+	@Override
 	public PulseInception pulseInception() {
 		return pulseInception;
 	}
 
+	@Override
 	public ActivationMode activationMode() {
 		return activationMode;
 	}
 
+	@Override
 	public AttenuationMode attenuationMode() {
 		return attenuationMode;
 	}
 
+	@Override
 	public BranchMode branchMode() {
 		return branchMode;
 	}
 
+	@Override
 	public SendMode sendMode() {
 		return sendMode;
 	}
 
+	@Override
 	public EdgeWeight edgeWeight() {
 		return edgeWeight;
 	}
 
+	@Override
 	public Collection<AbortCondition> abortConditions() {
 		return abortConditions;
 	}
@@ -79,7 +88,7 @@ public class SpreadingActivation implements Configuration {
 		return new Builder(spreadingActivation);
 	}
 
-	public static class Builder {
+	public static final class Builder {
 
 		private int pulses;
 		private PulseInception pulseInception = PulseInception.Default.MINIMUM_ACTIVATION(0);

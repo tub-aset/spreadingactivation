@@ -18,7 +18,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 import de.tuberlin.aset.spreadingactivation.util.ExecutorQueue;
 import de.tuberlin.aset.spreadingactivation.util.RunnableProcess;
 
-public class Execution extends RunnableProcess {
+public final class Execution extends RunnableProcess {
 
 	private final GraphTraversalSource traversal;
 
@@ -241,7 +241,7 @@ public class Execution extends RunnableProcess {
 		return (double) vertex.property(propertyKeyFactory.vertexActivationKey(pulse)).orElse(0d);
 	}
 
-	public static class Builder {
+	public final static class Builder {
 
 		private final Configuration configuration;
 		private final GraphTraversalSource traversal;
@@ -277,7 +277,7 @@ public class Execution extends RunnableProcess {
 
 	}
 
-	public static class Context implements PropertyKeyFactory {
+	public final static class Context implements PropertyKeyFactory {
 
 		private final Configuration configuration;
 		private final Execution execution;
