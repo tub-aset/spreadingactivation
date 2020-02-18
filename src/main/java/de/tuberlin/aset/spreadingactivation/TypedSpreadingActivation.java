@@ -26,7 +26,7 @@ import de.tuberlin.aset.spreadingactivation.mode.EdgeWeight;
 import de.tuberlin.aset.spreadingactivation.mode.PulseInception;
 import de.tuberlin.aset.spreadingactivation.mode.SendMode;
 
-public class TypedSpreadingActivation implements Configuration {
+public final class TypedSpreadingActivation implements Configuration {
 
 	private final int pulses;
 	private final PulseInception pulseInception;
@@ -40,14 +40,19 @@ public class TypedSpreadingActivation implements Configuration {
 	private TypedSpreadingActivation(Builder builder) {
 		this.pulses = builder.pulses;
 		this.pulseInception = builder.pulseInception;
-		this.activationMode = new TypedActivationMode(builder.vertexTypePropertyKey, builder.activationModes);
-		this.attenuationMode = new TypedAttenuationMode(builder.vertexTypePropertyKey, builder.attenuationModes);
-		this.branchMode = new TypedBranchMode(builder.vertexTypePropertyKey, builder.branchModes);
-		this.sendMode = new TypedSendMode(builder.vertexTypePropertyKey, builder.sendModes);
-		this.edgeWeight = new TypedEdgeWeight(builder.edgeTypePropertyKey, builder.edgeWeights);
+		this.activationMode = new TypedActivationMode(builder.activationModePropertyKey, builder.activationModes,
+				builder.defaultActivationMode);
+		this.attenuationMode = new TypedAttenuationMode(builder.attenuationModePropertyKey, builder.attenuationModes,
+				builder.defaultAttenuationMode);
+		this.branchMode = new TypedBranchMode(builder.branchModePropertyKey, builder.branchModes,
+				builder.defaultBranchMode);
+		this.sendMode = new TypedSendMode(builder.sendModePropertyKey, builder.sendModes, builder.defaultSendMode);
+		this.edgeWeight = new TypedEdgeWeight(builder.edgeWeightPropertyKey, builder.edgeWeights,
+				builder.defaultEdgeWeight);
 		this.abortConditions = Collections.unmodifiableCollection(builder.abortConditions);
 	}
 
+	@Override
 	public Execution.Builder execution(GraphTraversalSource traversal) {
 		return new Execution.Builder(this, traversal);
 	}
@@ -100,11 +105,19 @@ public class TypedSpreadingActivation implements Configuration {
 		return new Builder(pulses, vertexTypePropertyKey, edgeTypePropertyKey);
 	}
 
-	public static class Builder {
+	public static final class Builder {
 
+		private String activationModePropertyKey;
+		private String attenuationModePropertyKey;
+		private String branchModePropertyKey;
+		private String sendModePropertyKey;
+		private String edgeWeightPropertyKey;
+		private ActivationMode defaultActivationMode = ActivationMode.Default.IDENTITY;
+		private AttenuationMode defaultAttenuationMode = AttenuationMode.Default.IGNORE;
+		private BranchMode defaultBranchMode = BranchMode.Default.NONE;
+		private SendMode defaultSendMode = SendMode.Default.BASIC;
+		private EdgeWeight defaultEdgeWeight = EdgeWeight.Default.CONSTANT;
 		private int pulses;
-		private String vertexTypePropertyKey;
-		private String edgeTypePropertyKey;
 		private PulseInception pulseInception = PulseInception.Default.MINIMUM_ACTIVATION(0d);
 		private Map<Object, ActivationMode> activationModes = new HashMap<>();
 		private Map<Object, AttenuationMode> attenuationModes = new HashMap<>();
@@ -115,8 +128,11 @@ public class TypedSpreadingActivation implements Configuration {
 
 		private Builder(int pulses, String vertexTypePropertyKey, String edgeTypePropertyKey) {
 			this.pulses = pulses;
-			this.vertexTypePropertyKey = vertexTypePropertyKey;
-			this.edgeTypePropertyKey = edgeTypePropertyKey;
+			this.activationModePropertyKey = vertexTypePropertyKey;
+			this.attenuationModePropertyKey = vertexTypePropertyKey;
+			this.branchModePropertyKey = vertexTypePropertyKey;
+			this.sendModePropertyKey = vertexTypePropertyKey;
+			this.edgeWeightPropertyKey = edgeTypePropertyKey;
 		}
 
 		public Builder pulses(int pulses) {
@@ -129,8 +145,23 @@ public class TypedSpreadingActivation implements Configuration {
 			return this;
 		}
 
+		public Builder activationModePropertyKey(String activationModePropertyKey) {
+			this.activationModePropertyKey = activationModePropertyKey;
+			return this;
+		}
+
 		public Builder activationMode(Object type, ActivationMode activationMode) {
 			this.activationModes.put(type, activationMode);
+			return this;
+		}
+
+		public Builder defaultActivationMode(ActivationMode defaultActivationMode) {
+			this.defaultActivationMode = defaultActivationMode;
+			return this;
+		}
+
+		public Builder attenuationModePropertyKey(String attenuationModePropertyKey) {
+			this.attenuationModePropertyKey = attenuationModePropertyKey;
 			return this;
 		}
 
@@ -139,8 +170,28 @@ public class TypedSpreadingActivation implements Configuration {
 			return this;
 		}
 
+		public Builder defaultAttenuationMode(AttenuationMode defaultAttenuationMode) {
+			this.defaultAttenuationMode = defaultAttenuationMode;
+			return this;
+		}
+
+		public Builder branchModePropertyKey(String branchModePropertyKey) {
+			this.branchModePropertyKey = branchModePropertyKey;
+			return this;
+		}
+
 		public Builder branchMode(Object type, BranchMode branchMode) {
 			this.branchModes.put(type, branchMode);
+			return this;
+		}
+
+		public Builder defaultBranchMode(BranchMode defaultBranchMode) {
+			this.defaultBranchMode = defaultBranchMode;
+			return this;
+		}
+
+		public Builder sendModePropertyKey(String sendModePropertyKey) {
+			this.sendModePropertyKey = sendModePropertyKey;
 			return this;
 		}
 
@@ -149,8 +200,23 @@ public class TypedSpreadingActivation implements Configuration {
 			return this;
 		}
 
+		public Builder defaultSendMode(SendMode defaultSendMode) {
+			this.defaultSendMode = defaultSendMode;
+			return this;
+		}
+
+		public Builder edgeWeightPropertyKey(String edgeWeightPropertyKey) {
+			this.edgeWeightPropertyKey = edgeWeightPropertyKey;
+			return this;
+		}
+
 		public Builder edgeWeight(Object type, EdgeWeight edgeWeight) {
 			this.edgeWeights.put(type, edgeWeight);
+			return this;
+		}
+
+		public Builder defaultEdgeWeight(EdgeWeight defaultEdgeWeight) {
+			this.defaultEdgeWeight = defaultEdgeWeight;
 			return this;
 		}
 
@@ -197,16 +263,21 @@ public class TypedSpreadingActivation implements Configuration {
 			return Collections.unmodifiableSet(modes.keySet());
 		}
 
+		public MODE getDefaultMode() {
+			return defaultMode;
+		}
+
 	}
 
 	public static final class TypedMinimumActivationPulseInception extends TypedMode<Double> implements PulseInception {
 
-		private TypedMinimumActivationPulseInception(String typePropertyKey, Map<Object, Double> minimumActivations) {
-			super(typePropertyKey, minimumActivations, 0d);
+		private TypedMinimumActivationPulseInception(String typePropertyKey, Map<Object, Double> minimumActivations,
+				Double defaultMinimumActivation) {
+			super(typePropertyKey, minimumActivations, defaultMinimumActivation);
 		}
 
 		private TypedMinimumActivationPulseInception(Builder builder) {
-			this(builder.typePropertyKey, builder.minimumActivations);
+			this(builder.typePropertyKey, builder.minimumActivations, builder.defaultMinimumActivation);
 		}
 
 		@Override
@@ -232,13 +303,24 @@ public class TypedSpreadingActivation implements Configuration {
 
 			private String typePropertyKey;
 			private Map<Object, Double> minimumActivations = new HashMap<>();
+			private Double defaultMinimumActivation = 0d;
 
 			private Builder(String typePropertyKey) {
 				this.typePropertyKey = typePropertyKey;
 			}
 
+			public Builder typePropertyKey(String typePropertyKey) {
+				this.typePropertyKey = typePropertyKey;
+				return this;
+			}
+
 			public Builder minimumActivation(Object type, Double minimumActivation) {
 				this.minimumActivations.put(type, minimumActivation);
+				return this;
+			}
+
+			public Builder defaultMinimumActivation(Double defaultMinimumActivation) {
+				this.defaultMinimumActivation = defaultMinimumActivation;
 				return this;
 			}
 
@@ -252,8 +334,9 @@ public class TypedSpreadingActivation implements Configuration {
 
 	public static final class TypedActivationMode extends TypedMode<ActivationMode> implements ActivationMode {
 
-		private TypedActivationMode(String typePropertyKey, Map<Object, ActivationMode> activationModes) {
-			super(typePropertyKey, activationModes, ActivationMode.Default.IDENTITY);
+		private TypedActivationMode(String typePropertyKey, Map<Object, ActivationMode> activationModes,
+				ActivationMode defaultActivationMode) {
+			super(typePropertyKey, activationModes, defaultActivationMode);
 		}
 
 		@Override
@@ -265,8 +348,9 @@ public class TypedSpreadingActivation implements Configuration {
 
 	public static final class TypedAttenuationMode extends TypedMode<AttenuationMode> implements AttenuationMode {
 
-		private TypedAttenuationMode(String typePropertyKey, Map<Object, AttenuationMode> attenuationModes) {
-			super(typePropertyKey, attenuationModes, AttenuationMode.Default.IGNORE);
+		private TypedAttenuationMode(String typePropertyKey, Map<Object, AttenuationMode> attenuationModes,
+				AttenuationMode defaultAttenuationMode) {
+			super(typePropertyKey, attenuationModes, defaultAttenuationMode);
 		}
 
 		@Override
@@ -278,8 +362,9 @@ public class TypedSpreadingActivation implements Configuration {
 
 	public static final class TypedBranchMode extends TypedMode<BranchMode> implements BranchMode {
 
-		private TypedBranchMode(String typePropertyKey, Map<Object, BranchMode> branchModes) {
-			super(typePropertyKey, branchModes, BranchMode.Default.NONE);
+		private TypedBranchMode(String typePropertyKey, Map<Object, BranchMode> branchModes,
+				BranchMode defaultBranchMode) {
+			super(typePropertyKey, branchModes, defaultBranchMode);
 		}
 
 		@Override
@@ -290,8 +375,8 @@ public class TypedSpreadingActivation implements Configuration {
 
 	public static final class TypedSendMode extends TypedMode<SendMode> implements SendMode {
 
-		private TypedSendMode(String typePropertyKey, Map<Object, SendMode> sendModes) {
-			super(typePropertyKey, sendModes, SendMode.Default.BASIC);
+		private TypedSendMode(String typePropertyKey, Map<Object, SendMode> sendModes, SendMode defaultSendMode) {
+			super(typePropertyKey, sendModes, defaultSendMode);
 		}
 
 		@Override
@@ -303,8 +388,9 @@ public class TypedSpreadingActivation implements Configuration {
 
 	public static final class TypedEdgeWeight extends TypedMode<EdgeWeight> implements EdgeWeight {
 
-		private TypedEdgeWeight(String typePropertyKey, Map<Object, EdgeWeight> edgeWeights) {
-			super(typePropertyKey, edgeWeights, EdgeWeight.Default.CONSTANT);
+		private TypedEdgeWeight(String typePropertyKey, Map<Object, EdgeWeight> edgeWeights,
+				EdgeWeight defaultEdgeWeight) {
+			super(typePropertyKey, edgeWeights, defaultEdgeWeight);
 		}
 
 		@Override
