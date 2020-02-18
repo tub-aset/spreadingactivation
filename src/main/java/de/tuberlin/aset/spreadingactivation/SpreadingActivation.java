@@ -91,7 +91,7 @@ public final class SpreadingActivation implements Configuration {
 	public static final class Builder {
 
 		private int pulses;
-		private PulseInception pulseInception = PulseInception.Default.MINIMUM_ACTIVATION(0);
+		private PulseInception pulseInception = PulseInception.Default.MINIMUM_ACTIVATION;
 		private ActivationMode activationMode = ActivationMode.Default.IDENTITY;
 		private AttenuationMode attenuationMode = AttenuationMode.Default.IGNORE;
 		private BranchMode branchMode = BranchMode.Default.NONE;

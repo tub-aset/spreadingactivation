@@ -10,13 +10,30 @@ public interface EdgeWeight {
 
 	public static final class Default {
 
-		public static final EdgeWeight CONSTANT = new EdgeWeight() {
+		public static final EdgeWeight CONSTANT = new ConstantEdgeWeight(1d);
+
+		public static final EdgeWeight CONSTANT(double edgeWeightFactor) {
+			return new ConstantEdgeWeight(edgeWeightFactor);
+		};
+
+		public static final class ConstantEdgeWeight implements EdgeWeight {
+
+			private final double edgeWeightFactor;
+
+			public ConstantEdgeWeight(double edgeWeightFactor) {
+				this.edgeWeightFactor = edgeWeightFactor;
+			}
 
 			@Override
 			public double edgeWeight(Context context, Edge edge, boolean withDirection) {
-				return 1d;
+				return edgeWeightFactor;
 			}
-		};
+
+			public double getEdgeWeightFactor() {
+				return edgeWeightFactor;
+			}
+
+		}
 
 	}
 

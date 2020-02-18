@@ -13,13 +13,16 @@ public interface PulseInception {
 
 	public static final class Default {
 
+		public static final MinimumActivationPulseInception MINIMUM_ACTIVATION = new MinimumActivationPulseInception(
+				0d);
+
 		public static final MinimumActivationPulseInception MINIMUM_ACTIVATION(double minimumActivation) {
 			return new MinimumActivationPulseInception(minimumActivation);
 		}
 
 		public static final class MinimumActivationPulseInception implements PulseInception {
 
-			private double minimumActivation;
+			private final double minimumActivation;
 
 			private MinimumActivationPulseInception(double minimumActivation) {
 				this.minimumActivation = minimumActivation;

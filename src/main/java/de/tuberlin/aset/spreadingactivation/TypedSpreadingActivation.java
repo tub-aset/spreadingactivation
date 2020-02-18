@@ -118,7 +118,7 @@ public final class TypedSpreadingActivation implements Configuration {
 		private SendMode defaultSendMode = SendMode.Default.BASIC;
 		private EdgeWeight defaultEdgeWeight = EdgeWeight.Default.CONSTANT;
 		private int pulses;
-		private PulseInception pulseInception = PulseInception.Default.MINIMUM_ACTIVATION(0d);
+		private PulseInception pulseInception = PulseInception.Default.MINIMUM_ACTIVATION;
 		private Map<Object, ActivationMode> activationModes = new HashMap<>();
 		private Map<Object, AttenuationMode> attenuationModes = new HashMap<>();
 		private Map<Object, BranchMode> branchModes = new HashMap<>();
@@ -248,6 +248,9 @@ public final class TypedSpreadingActivation implements Configuration {
 		}
 
 		protected MODE getMode(Element element) {
+			if (typePropertyKey == null) {
+				return getMode(element.label());
+			}
 			Property<Object> property = element.property(typePropertyKey);
 			if (property.isPresent()) {
 				return getMode(property.value());
