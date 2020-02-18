@@ -24,7 +24,7 @@ public interface AttenuationMode {
 
 		public static final class FixedAttenuationMode implements AttenuationMode {
 
-			private double attenuationFactor;
+			private final double attenuationFactor;
 
 			private FixedAttenuationMode(double attenuationFactor) {
 				this.attenuationFactor = attenuationFactor;
@@ -47,7 +47,7 @@ public interface AttenuationMode {
 
 		public static final class IncreasingAttenuationMode implements AttenuationMode {
 
-			private double attenuationFactor;
+			private final double attenuationFactor;
 
 			private IncreasingAttenuationMode(double attenuationFactor) {
 				this.attenuationFactor = attenuationFactor;
