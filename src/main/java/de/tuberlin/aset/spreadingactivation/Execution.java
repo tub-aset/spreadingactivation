@@ -276,7 +276,7 @@ public final class Execution extends RunnableProcess {
 
 	}
 
-	public final static class Context implements PropertyKeyFactory {
+	public final static class Context {
 
 		private final Configuration configuration;
 		private final Execution execution;
@@ -327,22 +327,18 @@ public final class Execution extends RunnableProcess {
 			return configuration.abortConditions();
 		}
 
-		@Override
 		public String outputActivationKey(int pulse) {
 			return execution.propertyKeyFactory.outputActivationKey(pulse);
 		}
 
-		@Override
 		public String edgeActivationKey(int pulse, boolean withDirection) {
 			return execution.propertyKeyFactory.edgeActivationKey(pulse, withDirection);
 		}
 
-		@Override
 		public String inputActivationKey(int pulse) {
 			return execution.propertyKeyFactory.inputActivationKey(pulse);
 		}
 
-		@Override
 		public String vertexActivationKey(int pulse) {
 			return execution.propertyKeyFactory.vertexActivationKey(pulse);
 		}
@@ -358,6 +354,8 @@ public final class Execution extends RunnableProcess {
 		String inputActivationKey(int pulse);
 
 		String vertexActivationKey(int pulse);
+
+		void cleanupProperties(GraphTraversalSource traversal, int pulses);
 
 	}
 
@@ -394,6 +392,21 @@ public final class Execution extends RunnableProcess {
 		@Override
 		public String vertexActivationKey(int pulse) {
 			return propertyKey(VERTEX_ACTIVATION_PROPERTY_KEY, pulse);
+		}
+
+		@Override
+		public void cleanupProperties(GraphTraversalSource traversal, int pulses) {
+			String[] vertexPropertyKeys = new String[(pulses + 1) * 3];
+			String[] edgePropertyKeys = new String[(pulses + 1) * 2];
+			for (int pulse = 0; pulse <= pulses; pulse++) {
+				vertexPropertyKeys[pulse * 3 + 0] = outputActivationKey(pulse);
+				vertexPropertyKeys[pulse * 3 + 1] = inputActivationKey(pulse);
+				vertexPropertyKeys[pulse * 3 + 2] = vertexActivationKey(pulse);
+				edgePropertyKeys[pulse * 2 + 0] = edgeActivationKey(pulse, true);
+				edgePropertyKeys[pulse * 2 + 1] = edgeActivationKey(pulse, false);
+			}
+			traversal.V().properties(vertexPropertyKeys).drop().iterate();
+			traversal.E().properties(edgePropertyKeys).drop().iterate();
 		}
 
 		public String getPropertyPrefix() {

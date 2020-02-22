@@ -73,18 +73,7 @@ public class ExecutionResult {
 	}
 
 	public void cleanup() {
-		int pulses = this.pulse;
-		String[] vertexPropertyKeys = new String[(pulses + 1) * 3];
-		String[] edgePropertyKeys = new String[(pulses + 1) * 2];
-		for (int pulse = 0; pulse <= pulses; pulse++) {
-			vertexPropertyKeys[pulse * 3 + 0] = propertyKeyFactory.outputActivationKey(pulse);
-			vertexPropertyKeys[pulse * 3 + 1] = propertyKeyFactory.inputActivationKey(pulse);
-			vertexPropertyKeys[pulse * 3 + 2] = propertyKeyFactory.vertexActivationKey(pulse);
-			edgePropertyKeys[pulse * 2 + 0] = propertyKeyFactory.edgeActivationKey(pulse, true);
-			edgePropertyKeys[pulse * 2 + 1] = propertyKeyFactory.edgeActivationKey(pulse, false);
-		}
-		traversal.V().properties(vertexPropertyKeys).drop().iterate();
-		traversal.E().properties(edgePropertyKeys).drop().iterate();
+		propertyKeyFactory.cleanupProperties(traversal, pulse);
 	}
 
 	public Generation.Builder generateSpreadGraph() {
