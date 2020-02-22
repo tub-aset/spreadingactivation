@@ -127,8 +127,7 @@ public final class Execution extends RunnableProcess {
 						outputActivation *= context.attenuation(fromVertex);
 
 						if (validActivation(outputActivation)) {
-							double branch = context.branch(fromVertex);
-							outputActivation *= branch;
+							outputActivation *= context.branch(fromVertex);
 							if (validActivation(outputActivation)) {
 								setPropertyValue(fromVertex, propertyKeyFactory.outputActivationKey(pulse),
 										outputActivation);
