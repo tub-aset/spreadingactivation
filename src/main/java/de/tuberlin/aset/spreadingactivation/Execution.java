@@ -229,9 +229,9 @@ public final class Execution extends RunnableProcess {
 	}
 
 	private void setPropertyValue(Element element, String key, Object value) {
-		if (element.property(key).isPresent()) {
-			throw new IllegalStateException("property " + key + " already set for element " + element
-					+ " (current value: " + element.property(key).value() + ", new value: " + value + ")");
+		if (element instanceof Vertex) {
+			Vertex vertex = (Vertex) element;
+			vertex.property(Cardinality.single, key, value);
 		} else {
 			element.property(key, value);
 		}
