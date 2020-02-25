@@ -48,7 +48,7 @@ public final class Execution extends RunnableProcess {
 		if (isStarted()) {
 			throw new IllegalStateException("execution already started");
 		}
-		if (value != 0d) {
+		if (isValidActivation(value)) {
 			traversal.V().filter(vertexFilter)
 					.property(Cardinality.single, propertyKeyFactory.vertexActivationKey(0), value).iterate();
 		}
@@ -92,6 +92,7 @@ public final class Execution extends RunnableProcess {
 					}
 				}
 			}
+			queue.awaitCompleted();
 		} catch (Exception e) {
 			throw new RuntimeException("exception in pulse " + pulse, e);
 		} finally {
@@ -126,9 +127,9 @@ public final class Execution extends RunnableProcess {
 						double outputActivation = activation(fromVertex, pulse - 1);
 						outputActivation *= context.attenuation(fromVertex);
 
-						if (validActivation(outputActivation)) {
+						if (isValidActivation(outputActivation)) {
 							outputActivation *= context.branch(fromVertex);
-							if (validActivation(outputActivation)) {
+							if (isValidActivation(outputActivation)) {
 								setPropertyValue(fromVertex, propertyKeyFactory.outputActivationKey(pulse),
 										outputActivation);
 
@@ -162,7 +163,7 @@ public final class Execution extends RunnableProcess {
 					public void run() {
 						boolean withDirection = edge.outVertex().equals(fromVertex);
 						double edgeActivation = outputActivation * context.edgeWeight(edge, withDirection);
-						if (validActivation(edgeActivation)) {
+						if (isValidActivation(edgeActivation)) {
 							setPropertyValue(edge, propertyKeyFactory.edgeActivationKey(pulse, withDirection),
 									edgeActivation);
 						}
@@ -208,12 +209,12 @@ public final class Execution extends RunnableProcess {
 								.values(propertyKeyFactory.edgeActivationKey(pulse, false)).sum().tryNext().orElse(0d)
 								.doubleValue();
 
-						if (validActivation(inputActivation)) {
+						if (isValidActivation(inputActivation)) {
 							setPropertyValue(toVertex, propertyKeyFactory.inputActivationKey(pulse), inputActivation);
 						}
 						double lastVertexActivation = activation(toVertex, pulse - 1);
 						double vertexActivation = context.activation(toVertex, inputActivation + lastVertexActivation);
-						if (validActivation(vertexActivation)) {
+						if (isValidActivation(vertexActivation)) {
 							setPropertyValue(toVertex, propertyKeyFactory.vertexActivationKey(pulse), vertexActivation);
 						}
 					}
@@ -223,16 +224,20 @@ public final class Execution extends RunnableProcess {
 		return true;
 	}
 
-	private boolean validActivation(double value) {
+	private boolean isValidActivation(double value) {
 		return !Double.isInfinite(value) && !Double.isNaN(value) && value > 0d;
 	}
 
 	private void setPropertyValue(Element element, String key, Object value) {
-		if (element instanceof Vertex) {
-			Vertex vertex = (Vertex) element;
-			vertex.property(Cardinality.single, key, value);
+		if (element.property(key).isPresent()) {
+			throw new IllegalStateException("element " + element + ": property " + key + " already present");
 		} else {
-			element.property(key, value);
+			if (element instanceof Vertex) {
+				Vertex vertex = (Vertex) element;
+				vertex.property(Cardinality.single, key, value);
+			} else {
+				element.property(key, value);
+			}
 		}
 	}
 
@@ -370,6 +375,10 @@ public final class Execution extends RunnableProcess {
 
 		private final String propertyPrefix;
 
+		public DefaultPropertyKeyFactory() {
+			this(null);
+		}
+
 		public DefaultPropertyKeyFactory(String propertyPrefix) {
 			this.propertyPrefix = propertyPrefix;
 		}
@@ -415,8 +424,10 @@ public final class Execution extends RunnableProcess {
 
 		private String propertyKey(String key, boolean withDirection, int pulse) {
 			StringBuilder sb = new StringBuilder();
-			sb.append(propertyPrefix);
-			sb.append(SPLIT);
+			if (propertyPrefix != null && propertyPrefix.length() > 0) {
+				sb.append(propertyPrefix);
+				sb.append(SPLIT);
+			}
 			sb.append(key);
 			sb.append(SPLIT);
 			sb.append(withDirection);
@@ -427,8 +438,10 @@ public final class Execution extends RunnableProcess {
 
 		private String propertyKey(String key, int pulse) {
 			StringBuilder sb = new StringBuilder();
-			sb.append(propertyPrefix);
-			sb.append(SPLIT);
+			if (propertyPrefix != null && propertyPrefix.length() > 0) {
+				sb.append(propertyPrefix);
+				sb.append(SPLIT);
+			}
 			sb.append(key);
 			sb.append(SPLIT);
 			sb.append(pulse);
