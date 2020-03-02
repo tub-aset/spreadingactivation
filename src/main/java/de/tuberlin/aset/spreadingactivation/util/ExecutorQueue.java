@@ -1,6 +1,7 @@
 package de.tuberlin.aset.spreadingactivation.util;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutionException;
@@ -9,17 +10,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class ExecutorQueue {
-	private ExecutorService executor;
-	private int maxParallelTasks;
+	private final ExecutorService executor;
+	private final int maxParallelTasks;
+	private final int maxFinishedTasks;
 
 	private boolean interrupted = false;
 	private int submittedTasks = 0;
 	private Collection<Iterator<Runnable>> tasksQueue = new LinkedHashSet<>();
-	private Collection<Future<?>> futures = new LinkedHashSet<>();
+	private Collection<Future<?>> futures = new HashSet<>();
 
-	public ExecutorQueue(ExecutorService executor, int maxSubmittedTasks) {
+	public ExecutorQueue(ExecutorService executor, int maxSubmittedTasks, int maxFinishedTasks) {
 		this.executor = executor;
 		this.maxParallelTasks = maxSubmittedTasks;
+		this.maxFinishedTasks = maxFinishedTasks;
 	}
 
 	public synchronized void submit(Iterator<Runnable> tasks) {
@@ -44,7 +47,7 @@ public class ExecutorQueue {
 	}
 
 	private synchronized void executeNext() {
-		while (!interrupted && submittedTasks < maxParallelTasks) {
+		while (!interrupted && submittedTasks < maxParallelTasks && futures.size() < maxFinishedTasks) {
 			Iterator<Iterator<Runnable>> taskQueueIterator = tasksQueue.iterator();
 			if (taskQueueIterator.hasNext()) {
 				Iterator<Runnable> tasksIterator = taskQueueIterator.next();
@@ -99,7 +102,11 @@ public class ExecutorQueue {
 				future = iterator.next();
 				iterator.remove();
 			}
-			future.get();
+			try {
+				future.get();
+			} finally {
+				executeNext();
+			}
 		}
 	}
 

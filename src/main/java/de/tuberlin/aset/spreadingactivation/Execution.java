@@ -24,6 +24,7 @@ public final class Execution extends RunnableProcess {
 
 	private final ExecutorService executor;
 	private final int parallelTasks;
+	private final int finishedTasks;
 
 	private final Context context;
 	private final PropertyKeyFactory propertyKeyFactory;
@@ -34,6 +35,7 @@ public final class Execution extends RunnableProcess {
 		this.traversal = builder.traversal;
 		this.executor = builder.executor;
 		this.parallelTasks = builder.parallelTasks;
+		this.finishedTasks = builder.finishedTasks;
 		this.propertyKeyFactory = builder.propertyKeyFactory != null ? builder.propertyKeyFactory
 				: new DefaultPropertyKeyFactory(UUID.randomUUID().toString());
 
@@ -65,7 +67,7 @@ public final class Execution extends RunnableProcess {
 			shutdownExecutor = true;
 		}
 
-		ExecutorQueue queue = new ExecutorQueue(executor, parallelTasks);
+		ExecutorQueue queue = new ExecutorQueue(executor, parallelTasks, finishedTasks);
 
 		try {
 			while (!this.isInterrupted() && pulse < context.pulses()) {
@@ -252,6 +254,7 @@ public final class Execution extends RunnableProcess {
 
 		private ExecutorService executor;
 		private int parallelTasks = Runtime.getRuntime().availableProcessors();
+		private int finishedTasks = parallelTasks * 2;
 
 		private PropertyKeyFactory propertyKeyFactory;
 
@@ -267,6 +270,11 @@ public final class Execution extends RunnableProcess {
 
 		public Builder parallelTasks(int parallelTasks) {
 			this.parallelTasks = parallelTasks;
+			return this;
+		}
+
+		public Builder finishedTasks(int finishedTasks) {
+			this.finishedTasks = finishedTasks;
 			return this;
 		}
 
