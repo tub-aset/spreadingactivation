@@ -10,14 +10,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class ExecutorQueue {
+
 	private final ExecutorService executor;
 	private final int maxParallelTasks;
 	private final int maxFinishedTasks;
 
+	private final Collection<Iterator<Runnable>> tasksQueue = new LinkedHashSet<>();
+	private final Collection<Future<?>> futures = new HashSet<>();
+
 	private boolean interrupted = false;
 	private int submittedTasks = 0;
-	private Collection<Iterator<Runnable>> tasksQueue = new LinkedHashSet<>();
-	private Collection<Future<?>> futures = new HashSet<>();
 
 	public ExecutorQueue(ExecutorService executor, int maxSubmittedTasks, int maxFinishedTasks) {
 		this.executor = executor;
