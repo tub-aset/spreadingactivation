@@ -441,7 +441,7 @@ public final class Execution extends RunnableProcess {
 			sb.append(withDirection);
 			sb.append(SPLIT);
 			sb.append(pulse);
-			return sb.toString();
+			return sb.toString().intern();
 		}
 
 		private String propertyKey(String key, int pulse) {
@@ -453,7 +453,7 @@ public final class Execution extends RunnableProcess {
 			sb.append(key);
 			sb.append(SPLIT);
 			sb.append(pulse);
-			return sb.toString();
+			return sb.toString().intern();
 		}
 
 	}
