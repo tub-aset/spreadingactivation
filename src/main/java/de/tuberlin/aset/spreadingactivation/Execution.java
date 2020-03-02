@@ -70,7 +70,7 @@ public final class Execution extends RunnableProcess {
 		ExecutorQueue queue = new ExecutorQueue(executor, parallelTasks, finishedTasks);
 
 		try {
-			while (!this.isInterrupted() && pulse < context.pulses()) {
+			pulseLoop: while (!this.isInterrupted() && pulse < context.pulses()) {
 				pulse++;
 				if (calculateOutputActivationAndEdgeActivation(queue, pulse)) {
 					queue.awaitCompleted();
@@ -78,10 +78,10 @@ public final class Execution extends RunnableProcess {
 					if (calculateInputActivationAndVertexActivation(queue, pulse)) {
 						queue.awaitCompleted();
 					} else {
-						break;
+						break pulseLoop;
 					}
 				} else {
-					break;
+					break pulseLoop;
 				}
 
 				if (this.isInterrupted()) {
@@ -90,7 +90,7 @@ public final class Execution extends RunnableProcess {
 
 				for (AbortCondition abortCondition : context.abortConditions()) {
 					if (abortCondition.shouldAbort(this, context)) {
-						break;
+						break pulseLoop;
 					}
 				}
 			}
