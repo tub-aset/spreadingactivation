@@ -254,7 +254,7 @@ public final class Execution extends RunnableProcess {
 
 		private ExecutorService executor;
 		private int parallelTasks = Runtime.getRuntime().availableProcessors();
-		private int finishedTasks = parallelTasks * 2;
+		private int finishedTasks = parallelTasks * 100;
 
 		private PropertyKeyFactory propertyKeyFactory;
 
