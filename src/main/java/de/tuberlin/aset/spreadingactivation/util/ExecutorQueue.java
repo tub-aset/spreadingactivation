@@ -13,7 +13,6 @@ public class ExecutorQueue {
 
 	private final ExecutorService executor;
 	private final int maxParallelTasks;
-	private final int maxFinishedTasks;
 
 	private final Collection<Iterator<Runnable>> tasksQueue = new LinkedHashSet<>();
 	private final Collection<Future<?>> futures = new HashSet<>();
@@ -21,10 +20,9 @@ public class ExecutorQueue {
 	private boolean interrupted = false;
 	private int submittedTasks = 0;
 
-	public ExecutorQueue(ExecutorService executor, int maxSubmittedTasks, int maxFinishedTasks) {
+	public ExecutorQueue(ExecutorService executor, int maxSubmittedTasks) {
 		this.executor = executor;
 		this.maxParallelTasks = maxSubmittedTasks;
-		this.maxFinishedTasks = maxFinishedTasks;
 	}
 
 	public synchronized void submit(Iterator<Runnable> tasks) {
@@ -49,7 +47,7 @@ public class ExecutorQueue {
 	}
 
 	private synchronized void executeNext() {
-		while (!interrupted && submittedTasks < maxParallelTasks && futures.size() < maxFinishedTasks) {
+		while (!interrupted && submittedTasks < maxParallelTasks) {
 			Iterator<Iterator<Runnable>> taskQueueIterator = tasksQueue.iterator();
 			if (taskQueueIterator.hasNext()) {
 				Iterator<Runnable> tasksIterator = taskQueueIterator.next();
