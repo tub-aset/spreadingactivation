@@ -245,6 +245,10 @@ public final class Execution extends RunnableProcess {
 		return (double) vertex.property(propertyKeyFactory.vertexActivationKey(pulse)).orElse(0d);
 	}
 
+	public static Builder build(Configuration configuration, GraphTraversalSource traversal) {
+		return new Builder(configuration, traversal);
+	}
+
 	public final static class Builder {
 
 		private final Configuration configuration;
@@ -255,7 +259,7 @@ public final class Execution extends RunnableProcess {
 
 		private PropertyKeyFactory propertyKeyFactory;
 
-		Builder(Configuration configuration, GraphTraversalSource traversal) {
+		private Builder(Configuration configuration, GraphTraversalSource traversal) {
 			this.configuration = configuration;
 			this.traversal = traversal;
 		}

@@ -54,7 +54,7 @@ public final class TypedSpreadingActivation implements Configuration {
 
 	@Override
 	public Execution.Builder execution(GraphTraversalSource traversal) {
-		return new Execution.Builder(this, traversal);
+		return Execution.build(this, traversal);
 	}
 
 	@Override
