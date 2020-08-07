@@ -67,8 +67,8 @@ Get the result of the spreading activation, including activates results, last pu
 ```java
 ExecutionResult result = execution.getResult();
 
-GraphTraversal<?, Vertex> activatedVertices = result.activatedVertices();
 int lastPulse = result.pulse();
+GraphTraversal<?, Vertex> activatedVertices = result.activatedVertices(lastPulse);
 double activation = result.activation(vertex, pulse);
 ```
 

@@ -2,8 +2,10 @@ package de.tuberlin.aset.spreadingactivation;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import de.tuberlin.aset.spreadingactivation.Execution.PropertyKeyFactory;
@@ -21,6 +23,29 @@ public class ExecutionResult {
 		this.pulse = builder.pulse;
 	}
 
+	@SuppressWarnings("unchecked")
+	public void accumulateActivations(String sumKey, double lambda) {
+		if (lambda == 1d) {
+			String[] keys = new String[pulse + 1];
+
+			for (int p = 0; p <= pulse; p++) {
+				keys[p] = propertyKeyFactory.vertexActivationKey(p);
+			}
+
+			traversal.V().property(sumKey, __.coalesce(__.values(keys), __.constant(0d)).sum()).iterate();
+		} else {
+			Traversal<Object, Double>[] factors = new Traversal[pulse + 1];
+
+			for (int p = 0; p <= pulse; p++) {
+				double factor = Math.pow(lambda, p);
+				factors[p] = __.coalesce(__.values(propertyKeyFactory.vertexActivationKey(p)), __.constant(0d))
+						.as("act").constant(factor).as("factor").math("act * factor");
+			}
+
+			traversal.V().property(sumKey, __.union(factors).sum()).iterate();
+		}
+	}
+
 	public GraphTraversalSource traversal() {
 		return traversal;
 	}
@@ -34,16 +59,12 @@ public class ExecutionResult {
 		return pulse;
 	}
 
-	public double activation(Vertex vertex) {
-		return activation(vertex, pulse);
-	}
-
 	public double activation(Vertex vertex, int pulse) {
-		return (double) vertex.property(propertyKeyFactory.vertexActivationKey(pulse)).orElse(0d);
+		return activation(vertex, propertyKeyFactory.vertexActivationKey(pulse));
 	}
 
-	public double activation(Object id) {
-		return activation(vertex(id));
+	public double activation(Vertex vertex, String propertyKey) {
+		return (double) vertex.property(propertyKey).orElse(0d);
 	}
 
 	public Vertex vertex(Object id) {
@@ -54,22 +75,20 @@ public class ExecutionResult {
 		return activation(vertex(id), pulse);
 	}
 
-	public GraphTraversal<?, Vertex> activatedVertices() {
-		return activatedVertices(pulse);
-	}
-
 	public GraphTraversal<?, Vertex> activatedVertices(int pulse) {
-		return traversal.V().has(propertyKeyFactory.vertexActivationKey(pulse)).order()
-				.by(propertyKeyFactory.vertexActivationKey(pulse), Order.desc);
+		return activatedVertices(propertyKeyFactory.vertexActivationKey(pulse));
 	}
 
-	public GraphTraversal<?, Vertex> activatedVertices(double minimumActivation) {
-		return activatedVertices(pulse, minimumActivation);
+	public GraphTraversal<?, Vertex> activatedVertices(String propertyKey) {
+		return traversal.V().has(propertyKey).order().by(propertyKey, Order.desc);
 	}
 
 	public GraphTraversal<?, Vertex> activatedVertices(int pulse, double minimumActivation) {
-		return traversal.V().has(propertyKeyFactory.vertexActivationKey(pulse), P.gte(minimumActivation)).order()
-				.by(propertyKeyFactory.vertexActivationKey(pulse), Order.desc);
+		return activatedVertices(propertyKeyFactory.vertexActivationKey(pulse), minimumActivation);
+	}
+
+	public GraphTraversal<?, Vertex> activatedVertices(String propertyKey, double minimumActivation) {
+		return traversal.V().has(propertyKey, P.gte(minimumActivation)).order().by(propertyKey, Order.desc);
 	}
 
 	public void cleanup() {
