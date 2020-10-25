@@ -54,6 +54,11 @@ public final class Execution extends RunnableProcess {
 		}
 	}
 
+	public void activate(GraphTraversal<Vertex, Long> activationTraversal) {
+		traversal.V().property(Cardinality.single, propertyKeyFactory.vertexActivationKey(0), activationTraversal)
+				.iterate();
+	}
+
 	@Override
 	public void run() {
 		started();
