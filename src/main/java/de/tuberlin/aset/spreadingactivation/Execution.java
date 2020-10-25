@@ -61,6 +61,7 @@ public final class Execution extends RunnableProcess {
 
 	@Override
 	public void run() {
+		checkFinished();
 		started();
 
 		ExecutorService executor = this.executor;

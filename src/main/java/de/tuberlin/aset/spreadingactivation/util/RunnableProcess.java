@@ -18,22 +18,36 @@ public abstract class RunnableProcess implements Runnable {
 		return interrupted;
 	}
 
+	protected void checkInterrupted() {
+		if (isInterrupted()) {
+			throw new IllegalStateException("interrupted");
+		}
+	}
+
 	public void interrupt() {
 		interrupted = true;
 	}
 
 	protected void started() {
-		if (isStarted()) {
-			throw new IllegalStateException("already started");
-		}
+		checkStarted();
 		started = true;
 	}
 
+	protected void checkStarted() {
+		if (isStarted()) {
+			throw new IllegalStateException("already started");
+		}
+	}
+
 	protected void finished() {
+		checkFinished();
+		finished = true;
+	}
+
+	protected void checkFinished() {
 		if (isFinished()) {
 			throw new IllegalStateException("already finished");
 		}
-		finished = true;
 	}
 
 }
