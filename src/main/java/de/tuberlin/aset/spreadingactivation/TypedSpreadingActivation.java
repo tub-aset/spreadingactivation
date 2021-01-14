@@ -237,7 +237,7 @@ public final class TypedSpreadingActivation implements Configuration {
 		private final Map<Object, MODE> modes;
 		private final MODE defaultMode;
 
-		private TypedMode(String typePropertyKey, Map<Object, MODE> modes, MODE defaultMode) {
+		protected TypedMode(String typePropertyKey, Map<Object, MODE> modes, MODE defaultMode) {
 			this.typePropertyKey = typePropertyKey;
 			this.defaultMode = defaultMode;
 			this.modes = Collections.unmodifiableMap(modes);
