@@ -89,7 +89,7 @@ public final class Execution extends RunnableProcess {
 				}
 
 				if (this.isInterrupted()) {
-					break;
+					break pulseLoop;
 				}
 
 				for (AbortCondition abortCondition : context.abortConditions()) {
