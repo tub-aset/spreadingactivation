@@ -225,8 +225,8 @@ public final class PulsedSpreadingActivation implements Configuration {
 		@Override
 		public Iterator<Vertex> startingVertices(Context context) {
 			Double minimumActivation = getMode(context.pulse());
-			return context.traversal().V().has(context.vertexActivationKey(context.pulse() - 1),
-					P.gte(minimumActivation));
+			return context.traversal().V()
+					.has(context.vertexActivationKey(context.pulse() - 1), P.gte(minimumActivation)).dedup();
 		}
 
 		public static Builder build() {

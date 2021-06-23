@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -13,10 +14,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import de.tuberlin.aset.spreadingactivation.Execution.Context;
 import de.tuberlin.aset.spreadingactivation.mode.ActivationMode;
@@ -240,7 +245,7 @@ public final class TypedSpreadingActivation implements Configuration {
 		protected TypedMode(String typePropertyKey, Map<Object, MODE> modes, MODE defaultMode) {
 			this.typePropertyKey = typePropertyKey;
 			this.defaultMode = defaultMode;
-			this.modes = Collections.unmodifiableMap(modes);
+			this.modes = Map.copyOf(modes);
 		}
 
 		public String getTypePropertyKey() {
@@ -270,6 +275,25 @@ public final class TypedSpreadingActivation implements Configuration {
 			return defaultMode;
 		}
 
+		public <S, E> GraphTraversal<S, E> chooseTraversal() {
+			GraphTraversal<S, E> choose = __.choose(typePropertyKey == null ? __.label() : __.values(typePropertyKey));
+			for (Entry<Object, MODE> entry : modes.entrySet()) {
+				choose = choose.option(entry.getKey(), __.constant(entry.getValue()));
+			}
+			choose = choose.option(Pick.none, __.constant(defaultMode));
+			return choose;
+		}
+
+		public <S, E> GraphTraversal<S, E> choose(GraphTraversal<S, E> traversal) {
+			GraphTraversal<S, E> choose = traversal
+					.choose(typePropertyKey == null ? __.label() : __.values(typePropertyKey));
+			for (Entry<Object, MODE> entry : modes.entrySet()) {
+				choose = choose.option(entry.getKey(), __.constant(entry.getValue()));
+			}
+			choose = choose.option(Pick.none, __.constant(defaultMode));
+			return choose;
+		}
+
 	}
 
 	public static final class TypedMinimumActivationPulseInception extends TypedMode<Double> implements PulseInception {
@@ -292,10 +316,15 @@ public final class TypedSpreadingActivation implements Configuration {
 			int i = 0;
 			for (Object type : definedTypes) {
 				Double minimumActivation = getMode(type);
-				traversals[i++] = __.has(typePropertyKey, type).has(context.vertexActivationKey(context.pulse() - 1),
-						P.gte(minimumActivation));
+				if (typePropertyKey != null) {
+					traversals[i++] = __.has(typePropertyKey, type) //
+							.has(context.vertexActivationKey(context.pulse() - 1), P.gte(minimumActivation));
+				} else {
+					traversals[i++] = __.hasLabel((String) type) //
+							.has(context.vertexActivationKey(context.pulse() - 1), P.gte(minimumActivation));
+				}
 			}
-			return context.traversal().V().filter(__.or(traversals));
+			return context.traversal().V().filter(__.or(traversals)).dedup();
 		}
 
 		public static Builder build(String typePropertyKey) {

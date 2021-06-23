@@ -23,7 +23,7 @@ public final class Execution extends RunnableProcess {
 	private final GraphTraversalSource traversal;
 
 	private final ExecutorService executor;
-	private final int parallelTasks;
+	private final Integer parallelTasks;
 
 	private final Context context;
 	private final PropertyKeyFactory propertyKeyFactory;
@@ -65,11 +65,12 @@ public final class Execution extends RunnableProcess {
 		started();
 
 		ExecutorService executor = this.executor;
-		boolean shutdownExecutor = false;
-		if (executor == null) {
+		if (this.executor == null) {
 			executor = Executors.newCachedThreadPool();
-			shutdownExecutor = true;
 		}
+
+		int parallelTasks = this.parallelTasks != null ? this.parallelTasks
+				: Runtime.getRuntime().availableProcessors();
 
 		ExecutorQueue queue = new ExecutorQueue(executor, parallelTasks);
 
@@ -99,10 +100,11 @@ public final class Execution extends RunnableProcess {
 				}
 			}
 			queue.awaitCompleted();
+
 		} catch (Exception e) {
 			throw new RuntimeException("exception in pulse " + pulse, e);
 		} finally {
-			if (shutdownExecutor) {
+			if (this.executor == null) {
 				executor.shutdown();
 			}
 			finished();
@@ -110,11 +112,16 @@ public final class Execution extends RunnableProcess {
 	}
 
 	private boolean calculateOutputActivationAndEdgeActivation(ExecutorQueue queue, int pulse) {
-		Iterator<Vertex> startingVertices = context.startingVertices(context);
+		Iterator<Vertex> startingVertices = context.startingVertices();
 
 		if (!startingVertices.hasNext()) {
 			return false;
 		}
+
+		String lastVertexActivationKey = propertyKeyFactory.vertexActivationKey(pulse - 1);
+		String outputActivationKey = propertyKeyFactory.outputActivationKey(pulse);
+		String edgeActivationKeyWithDirection = propertyKeyFactory.edgeActivationKey(pulse, true);
+		String edgeActivationKeyOppositeDirection = propertyKeyFactory.edgeActivationKey(pulse, false);
 
 		queue.submit(new Iterator<Runnable>() {
 
@@ -130,16 +137,16 @@ public final class Execution extends RunnableProcess {
 
 					@Override
 					public void run() {
-						double outputActivation = activation(fromVertex, pulse - 1);
+						double outputActivation = activation(fromVertex, lastVertexActivationKey);
 						outputActivation *= context.attenuation(fromVertex);
 
 						if (isValidActivation(outputActivation)) {
 							outputActivation *= context.branch(fromVertex);
 							if (isValidActivation(outputActivation)) {
-								setPropertyValue(fromVertex, propertyKeyFactory.outputActivationKey(pulse),
-										outputActivation);
+								setPropertyValue(fromVertex, outputActivationKey, outputActivation);
 
-								calculateEdgeActivation(queue, pulse, fromVertex, outputActivation);
+								calculateEdgeActivation(queue, pulse, fromVertex, outputActivation,
+										edgeActivationKeyWithDirection, edgeActivationKeyOppositeDirection);
 							}
 						}
 					}
@@ -151,8 +158,8 @@ public final class Execution extends RunnableProcess {
 	}
 
 	private final void calculateEdgeActivation(ExecutorQueue queue, int pulse, Vertex fromVertex,
-			double outputActivation) {
-		Iterator<Edge> edges = context.allowedEdges(fromVertex).dedup();
+			double outputActivation, String edgeActivationKeyWithDirection, String edgeActivationKeyOppositeDirection) {
+		Iterator<Edge> edges = context.allowedEdges(fromVertex);
 		queue.submit(new Iterator<Runnable>() {
 
 			@Override
@@ -170,8 +177,9 @@ public final class Execution extends RunnableProcess {
 						boolean withDirection = edge.outVertex().equals(fromVertex);
 						double edgeActivation = outputActivation * context.edgeWeight(edge, withDirection);
 						if (isValidActivation(edgeActivation)) {
-							setPropertyValue(edge, propertyKeyFactory.edgeActivationKey(pulse, withDirection),
-									edgeActivation);
+							String edgeActivationKey = withDirection ? edgeActivationKeyWithDirection
+									: edgeActivationKeyOppositeDirection;
+							setPropertyValue(edge, edgeActivationKey, edgeActivation);
 						}
 
 					}
@@ -181,17 +189,23 @@ public final class Execution extends RunnableProcess {
 	}
 
 	private boolean calculateInputActivationAndVertexActivation(ExecutorQueue queue, int pulse) {
+		String lastVertexActivationKey = propertyKeyFactory.vertexActivationKey(pulse - 1);
+		String edgeActivationKeyWithDirection = propertyKeyFactory.edgeActivationKey(pulse, true);
+		String edgeActivationKeyOppositeDirection = propertyKeyFactory.edgeActivationKey(pulse, false);
 		Iterator<Vertex> vertexWithPreviousActivationOrEdgeActivation = traversal.V().or( //
-				__.has(propertyKeyFactory.vertexActivationKey(pulse - 1)), //
+				__.has(lastVertexActivationKey), //
 				__.toE(Direction.BOTH).or( //
-						__.has(propertyKeyFactory.edgeActivationKey(pulse, true)), //
-						__.has(propertyKeyFactory.edgeActivationKey(pulse, false)) //
+						__.has(edgeActivationKeyWithDirection), //
+						__.has(edgeActivationKeyOppositeDirection) //
 				) //
 		);
 
 		if (!vertexWithPreviousActivationOrEdgeActivation.hasNext()) {
 			return false;
 		}
+
+		String vertexActivationKey = propertyKeyFactory.vertexActivationKey(pulse);
+		String inputActivationKey = propertyKeyFactory.inputActivationKey(pulse);
 
 		queue.submit(new Iterator<Runnable>() {
 
@@ -209,19 +223,17 @@ public final class Execution extends RunnableProcess {
 					public void run() {
 						double inputActivation = 0d;
 						inputActivation += traversal.V(toVertex.id()).toE(Direction.IN)
-								.values(propertyKeyFactory.edgeActivationKey(pulse, true)).sum().tryNext().orElse(0d)
-								.doubleValue();
+								.values(edgeActivationKeyWithDirection).sum().tryNext().orElse(0d).doubleValue();
 						inputActivation += traversal.V(toVertex.id()).toE(Direction.OUT)
-								.values(propertyKeyFactory.edgeActivationKey(pulse, false)).sum().tryNext().orElse(0d)
-								.doubleValue();
+								.values(edgeActivationKeyOppositeDirection).sum().tryNext().orElse(0d).doubleValue();
 
 						if (isValidActivation(inputActivation)) {
-							setPropertyValue(toVertex, propertyKeyFactory.inputActivationKey(pulse), inputActivation);
+							setPropertyValue(toVertex, inputActivationKey, inputActivation);
 						}
-						double lastVertexActivation = activation(toVertex, pulse - 1);
+						double lastVertexActivation = activation(toVertex, lastVertexActivationKey);
 						double vertexActivation = context.activation(toVertex, inputActivation + lastVertexActivation);
 						if (isValidActivation(vertexActivation)) {
-							setPropertyValue(toVertex, propertyKeyFactory.vertexActivationKey(pulse), vertexActivation);
+							setPropertyValue(toVertex, vertexActivationKey, vertexActivation);
 						}
 					}
 				};
@@ -235,20 +247,20 @@ public final class Execution extends RunnableProcess {
 	}
 
 	private void setPropertyValue(Element element, String key, Object value) {
-		if (element.property(key).isPresent()) {
-			throw new IllegalStateException("element " + element + ": property " + key + " already present");
+//		if (element.property(key).isPresent()) {
+//			throw new IllegalStateException("element " + element + ": property " + key + " already present");
+//		} else {
+		if (element instanceof Vertex) {
+			Vertex vertex = (Vertex) element;
+			vertex.property(Cardinality.single, key, value);
 		} else {
-			if (element instanceof Vertex) {
-				Vertex vertex = (Vertex) element;
-				vertex.property(Cardinality.single, key, value);
-			} else {
-				element.property(key, value);
-			}
+			element.property(key, value);
 		}
+//		}
 	}
 
-	private double activation(Vertex vertex, int pulse) {
-		return (double) vertex.property(propertyKeyFactory.vertexActivationKey(pulse)).orElse(0d);
+	private double activation(Vertex vertex, String propertyKey) {
+		return (double) vertex.property(propertyKey).orElse(0d);
 	}
 
 	public static Builder build(Configuration configuration, GraphTraversalSource traversal) {
@@ -261,7 +273,7 @@ public final class Execution extends RunnableProcess {
 		private final GraphTraversalSource traversal;
 
 		private ExecutorService executor;
-		private int parallelTasks = Runtime.getRuntime().availableProcessors();
+		private Integer parallelTasks;
 
 		private PropertyKeyFactory propertyKeyFactory;
 
@@ -275,7 +287,7 @@ public final class Execution extends RunnableProcess {
 			return this;
 		}
 
-		public Builder parallelTasks(int parallelTasks) {
+		public Builder parallelTasks(Integer parallelTasks) {
 			this.parallelTasks = parallelTasks;
 			return this;
 		}
@@ -313,13 +325,13 @@ public final class Execution extends RunnableProcess {
 			return execution.traversal;
 		}
 
-		public Iterator<Vertex> startingVertices(Context context) {
+		public Iterator<Vertex> startingVertices() {
 			return configuration.pulseInception().startingVertices(this);
 		}
 
 		public GraphTraversal<?, Edge> allowedEdges(Vertex vertex) {
 			return execution.traversal.V(vertex.id()).toE(Direction.BOTH)
-					.filter(configuration.sendMode().allowedEdges(this, vertex));
+					.filter(configuration.sendMode().allowedEdges(this, vertex)).dedup();
 		}
 
 		public double edgeWeight(Edge edge, boolean withDirection) {

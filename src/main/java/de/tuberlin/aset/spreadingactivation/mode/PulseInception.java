@@ -30,8 +30,9 @@ public interface PulseInception {
 
 			@Override
 			public Iterator<Vertex> startingVertices(Context context) {
-				return context.traversal().V().has(context.vertexActivationKey(context.pulse() - 1),
-						P.gte(minimumActivation));
+				return context.traversal().V() //
+						.has(context.vertexActivationKey(context.pulse() - 1), P.gte(minimumActivation)) //
+						.dedup();
 			}
 
 			public double getMinimumActivation() {
