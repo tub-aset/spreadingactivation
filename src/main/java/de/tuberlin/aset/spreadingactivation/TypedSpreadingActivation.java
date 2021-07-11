@@ -1,5 +1,6 @@
 package de.tuberlin.aset.spreadingactivation;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -35,11 +37,11 @@ public final class TypedSpreadingActivation implements Configuration {
 
 	private final int pulses;
 	private final PulseInception pulseInception;
-	private final ActivationMode activationMode;
-	private final AttenuationMode attenuationMode;
-	private final BranchMode branchMode;
-	private final SendMode sendMode;
-	private final EdgeWeight edgeWeight;
+	private final TypedActivationMode activationMode;
+	private final TypedAttenuationMode attenuationMode;
+	private final TypedBranchMode branchMode;
+	private final TypedSendMode sendMode;
+	private final TypedEdgeWeight edgeWeight;
 	private final Collection<AbortCondition> abortConditions;
 
 	private TypedSpreadingActivation(Builder builder) {
@@ -73,27 +75,27 @@ public final class TypedSpreadingActivation implements Configuration {
 	}
 
 	@Override
-	public ActivationMode activationMode() {
+	public TypedActivationMode activationMode() {
 		return activationMode;
 	}
 
 	@Override
-	public AttenuationMode attenuationMode() {
+	public TypedAttenuationMode attenuationMode() {
 		return attenuationMode;
 	}
 
 	@Override
-	public BranchMode branchMode() {
+	public TypedBranchMode branchMode() {
 		return branchMode;
 	}
 
 	@Override
-	public SendMode sendMode() {
+	public TypedSendMode sendMode() {
 		return sendMode;
 	}
 
 	@Override
-	public EdgeWeight edgeWeight() {
+	public TypedEdgeWeight edgeWeight() {
 		return edgeWeight;
 	}
 

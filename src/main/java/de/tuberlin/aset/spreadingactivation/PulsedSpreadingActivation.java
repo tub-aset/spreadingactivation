@@ -26,11 +26,11 @@ public final class PulsedSpreadingActivation implements Configuration {
 
 	private final int pulses;
 	private final PulseInception pulseInception;
-	private final ActivationMode activationMode;
-	private final AttenuationMode attenuationMode;
-	private final BranchMode branchMode;
-	private final SendMode sendMode;
-	private final EdgeWeight edgeWeight;
+	private final PulsedActivationMode activationMode;
+	private final PulsedAttenuationMode attenuationMode;
+	private final PulsedBranchMode branchMode;
+	private final PulsedSendMode sendMode;
+	private final PulsedEdgeWeight edgeWeight;
 	private final Collection<AbortCondition> abortConditions;
 
 	private PulsedSpreadingActivation(Builder builder) {
@@ -60,27 +60,27 @@ public final class PulsedSpreadingActivation implements Configuration {
 	}
 
 	@Override
-	public ActivationMode activationMode() {
+	public PulsedActivationMode activationMode() {
 		return activationMode;
 	}
 
 	@Override
-	public AttenuationMode attenuationMode() {
+	public PulsedAttenuationMode attenuationMode() {
 		return attenuationMode;
 	}
 
 	@Override
-	public BranchMode branchMode() {
+	public PulsedBranchMode branchMode() {
 		return branchMode;
 	}
 
 	@Override
-	public SendMode sendMode() {
+	public PulsedSendMode sendMode() {
 		return sendMode;
 	}
 
 	@Override
-	public EdgeWeight edgeWeight() {
+	public PulsedEdgeWeight edgeWeight() {
 		return edgeWeight;
 	}
 
